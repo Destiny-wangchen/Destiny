@@ -13,6 +13,8 @@ export { data }
 export default createContentLoader('posts/*.md', {
   transform(raw) {
     return raw
+      // 私密/草稿文章不进公开列表
+      .filter((p) => !p.frontmatter.private && !p.frontmatter.draft)
       .map((p) => ({
         url: p.url,
         title: String(p.frontmatter.title ?? '未命名'),

@@ -6,6 +6,8 @@ import Footer from './components/Footer.vue'
 import HomeView from './components/HomeView.vue'
 import ArchiveView from './components/ArchiveView.vue'
 import ProjectsView from './components/ProjectsView.vue'
+import VaultView from './components/VaultView.vue'
+import WriteView from './components/WriteView.vue'
 import PageView from './components/PageView.vue'
 
 const { page, frontmatter } = useData()
@@ -18,6 +20,8 @@ const { page, frontmatter } = useData()
       <HomeView v-if="frontmatter.layout === 'home'" />
       <ArchiveView v-else-if="frontmatter.layout === 'archive'" />
       <ProjectsView v-else-if="frontmatter.layout === 'projects'" />
+      <VaultView v-else-if="frontmatter.layout === 'vault'" />
+      <WriteView v-else-if="frontmatter.layout === 'write'" />
 
       <article v-else-if="page.isNotFound" class="not-found">
         <h1>404</h1>

@@ -34,6 +34,23 @@ tags:
 
 首页与归档页会自动收录新文章，无需手动维护列表。
 
+也可以直接用站内的「写文章」入口（导航栏右上角的铅笔图标，或访问 `/write`）：
+填好标题、标签和正文，页面会自动生成 frontmatter 和文件名，一键下载 `.md` 或复制全文，
+草稿会自动存在浏览器里。
+
+## 私密文章（只有自己能看）
+
+1. 把 `.md` 文件放进 `private-src/`（格式和公开文章一样，这个目录已被 gitignore，明文不会离开本机）
+2. 运行 `npm run lock` —— 会用密码把文章加密成 `docs/.vitepress/vault-data.ts`
+3. 重新构建发布后，访问站内「私密」页面（`/vault`），输入密码即可在浏览器本地解密阅读
+
+说明：
+
+- 密码第一次运行 `lock` 时自动生成，保存在 `.vault-password`（同样被 gitignore），也可以用
+  `VAULT_PASSWORD=你的密码 npm run lock` 指定
+- 构建产物里只有密文，标题和正文都加密；忘记密码等于内容丢失，请务必记好
+- 解密用的是浏览器 WebCrypto（PBKDF2 + AES-256-GCM），需要 https 或 localhost 环境
+
 ## 如何修改项目展示
 
 编辑 `docs/projects.md` 顶部的 `items` 列表，每个项目支持：
@@ -80,12 +97,21 @@ git push -u origin main
 │   ├── .vitepress/
 │   │   ├── config.ts           # 站点配置（标题、base、代码高亮等）
 │   │   ├── posts.data.ts       # 自动收集文章元数据
+│   │   ├── vault-data.ts       # 私密文章密文（npm run lock 生成）
 │   │   ├── style.css           # 全局样式（极简黑白主题）
 │   │   └── theme/              # 自定义主题与组件
 │   ├── posts/                  # 博客文章
 │   ├── index.md                # 首页
 │   ├── archive.md              # 归档页
 │   ├── projects.md             # 项目展示
+│   ├── vault.md                # 私密阅读页
+│   ├── write.md                # 写文章入口
 │   └── public/                 # 静态资源（favicon 等）
+├── private-src/                # 私密文章明文（gitignore，不进仓库不上网站）
 └── .github/workflows/deploy.yml  # 自动部署工作流
 ```
+
+## 部署路径（base）
+
+`base` 由环境变量 `VITEPRESS_BASE` 控制，默认 `/`（独立域名 / 平台托管直接用）。
+部署到 GitHub Pages 项目页时需要 `/Destiny/`，工作流里已经设置好，本地不用管。

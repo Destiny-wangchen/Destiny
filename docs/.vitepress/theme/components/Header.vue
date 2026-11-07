@@ -4,10 +4,12 @@ import ThemeToggle from './ThemeToggle.vue'
 
 const { site } = useData()
 
+// 注意：链接统一带 .html，部分静态托管（如本站使用的平台）不做无扩展名映射
 const nav = [
   { text: '首页', link: '/' },
-  { text: '归档', link: '/archive' },
-  { text: '项目', link: '/projects' }
+  { text: '归档', link: '/archive.html' },
+  { text: '项目', link: '/projects.html' },
+  { text: '私密', link: '/vault.html' }
 ]
 </script>
 
@@ -19,6 +21,12 @@ const nav = [
         <a v-for="item in nav" :key="item.link" :href="withBase(item.link)">{{ item.text }}</a>
       </nav>
       <div class="header-actions">
+        <a class="icon-link" :href="withBase('/write.html')" title="写文章" aria-label="写文章">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
+          </svg>
+        </a>
         <a
           class="icon-link"
           href="https://github.com/Destiny-wangchen"
