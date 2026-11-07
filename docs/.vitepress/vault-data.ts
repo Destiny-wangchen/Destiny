@@ -1,13 +1,13 @@
-// 由 scripts/lock.mjs 生成（npm run lock），请勿手改。
+// 由 scripts/gen-vault.mjs 生成（npm run build 时自动执行），请勿手改。
 import type { VaultEntry } from './theme/vault'
 
 const entries: VaultEntry[] = [
   {
     "id": "2026-11-07-first-note",
     "date": "2026-11-07",
-    "salt": "276kmgQajgkyhYeRT4vT6A==",
-    "iv": "q8v19Szl72zpDqqH",
-    "ct": "6lw3oIIkFsDJQpmGLAB/Mfl+ht9ZgOhx6UoAJx1TDJqRXc/KqZFgvN0kwUS49wWWjCJa5/tSSFmG3WkMSkRF9I/GGDh/OZDTGl8t/GfeCRH4XgvVPC+I53H2bMKYIMVFtOjfMW4ysepqyvuiVAHk9Jlijnt/u19BbjeHmQUFomnBdpun15R07Gcof1wlEHWabaQ5bacn7xFgkq49xNHupzT6wm9hBRJWk2ZKv6pmWYMEevcC7/Xsp3gFouP46GlPY2ztzRb2xLUDcEH7RQNozw40fbU+KexqxXs20diVwr1RdzZCGOgSyEKQb3lRtJMn+MTM/ri1WzR49fwgaH3fuSO6yqpoyXajGUQkQtg4T2W/0wXEHjVsQRiUAdKJigjTWZE5rpBDDQJbBRfV6LZRhNW8b2aFFqPfXiAIuIHv0zxUwUNoff53UKScVIafUGMaRCN2WmqBglnip5rvFA6ZBANo/Ouhtg==",
+    "salt": "MZawIAthB4HDuBCPP3AFjw==",
+    "iv": "HwfN16QjjNBdedPG",
+    "ct": "7NbJGLqsT79vBZ9QftpDHjEsGFh5qGIx/+NGtnAWVjj1UPt5BKMmt6UOHqWuv8aJODTtlkv4QiyPzL8vwvgoHTYriNqPKWMphcmIpPl+tB5Shb2h1+/lYdIVbjpgpSepU/E7CfBr9K2/575aWQi42P32IiU+S7m//FoA25p7jffKsG6YlFY+DI1kOe2975uFOHq0QS3wDunDsQjj2w/KE6L20yumxzOIkv2wJzBolDFHnD227jGiWrR5gs+f4a9GNsgzMySpAMs5wkLJtD10ltiW0CIA1Ke4D5medfFcvWiQGN8n/tdPoZC8yWRwM8mqgBpzx7GSoZQBYRvx9r/ABPpQ/0kl/weVRT9c8KQbxBmO2bJEh6+q+OI9U00DiZ4P5DQsQPtlVrA7d6a5sRrejRNf9+Z08QtEImhLyS4YPbE51Z8b0rZ5KDMqjeFySzts6g31L0cWcHEXyp8W6ZvG+zQ7qn9Zaw==",
     "iter": 200000
   }
 ]

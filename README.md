@@ -34,22 +34,30 @@ tags:
 
 首页与归档页会自动收录新文章，无需手动维护列表。
 
-也可以直接用站内的「写文章」入口（导航栏右上角的铅笔图标，或访问 `/write`）：
-填好标题、标签和正文，页面会自动生成 frontmatter 和文件名，一键下载 `.md` 或复制全文，
-草稿会自动存在浏览器里。
+也可以直接用站内的「写文章」页面（`/write`），支持一键发布：
 
-## 私密文章（只有自己能看）
+1. 首次使用：在 GitHub 创建一个 Fine-grained Token（[创建入口](https://github.com/settings/personal-access-tokens/new)），
+   Repository access 选 **Only select repositories → Destiny**，Permissions 给 **Contents: Read and write**，
+   填进写作页的 Token 输入框（只存在你自己的浏览器 localStorage 里，不进仓库）
+2. 填标题、标签、正文 → 点「一键发布」→ 自动提交到仓库并触发 Actions 构建，1-2 分钟后上线
+3. 草稿自动保存在浏览器里，随时回来继续写
 
-1. 把 `.md` 文件放进 `private-src/`（格式和公开文章一样，这个目录已被 gitignore，明文不会离开本机）
-2. 运行 `npm run lock` —— 会用密码把文章加密成 `docs/.vitepress/vault-data.ts`
-3. 重新构建发布后，访问站内「私密」页面（`/vault`），输入密码即可在浏览器本地解密阅读
+## 隐藏文章（只有拿到密码的人能看）
 
-说明：
+在写作页勾选「隐藏文章」并填写保险箱密码，点「一键发布（加密）」：
 
-- 密码第一次运行 `lock` 时自动生成，保存在 `.vault-password`（同样被 gitignore），也可以用
-  `VAULT_PASSWORD=你的密码 npm run lock` 指定
-- 构建产物里只有密文，标题和正文都加密；忘记密码等于内容丢失，请务必记好
-- 解密用的是浏览器 WebCrypto（PBKDF2 + AES-256-GCM），需要 https 或 localhost 环境
+- 正文在**浏览器本地**用该密码加密（PBKDF2 + AES-256-GCM）后才上传，仓库 `private-vault/`
+  里只有密文，明文和密码都不经过任何服务器
+- 隐藏文章不进入首页/归档；拿到密码的人在「私密」页（`/vault`）输入同一密码即可阅读
+- 想让谁看，就把密码给谁；换密码 = 用新密码重新发布一遍
+
+## 本地私密文章工作流（可选）
+
+1. 把 `.md` 文件放进 `private-src/`（该目录已被 gitignore，明文不会离开本机）
+2. 密码保存在 `.vault-password`（同样被 gitignore），可用 `VAULT_PASSWORD=你的密码 npm run lock` 指定
+3. `npm run build` 时会自动把 `private-src/*.md` 加密并与线上密文合并生成 `vault-data.ts`
+
+注意：忘记密码等于内容无法解密，请务必记好。
 
 ## 如何修改项目展示
 
@@ -97,7 +105,7 @@ git push -u origin main
 │   ├── .vitepress/
 │   │   ├── config.ts           # 站点配置（标题、base、代码高亮等）
 │   │   ├── posts.data.ts       # 自动收集文章元数据
-│   │   ├── vault-data.ts       # 私密文章密文（npm run lock 生成）
+│   │   ├── vault-data.ts       # 私密文章密文（build 时自动聚合生成）
 │   │   ├── style.css           # 全局样式（极简黑白主题）
 │   │   └── theme/              # 自定义主题与组件
 │   ├── posts/                  # 博客文章
@@ -108,6 +116,7 @@ git push -u origin main
 │   ├── write.md                # 写文章入口
 │   └── public/                 # 静态资源（favicon 等）
 ├── private-src/                # 私密文章明文（gitignore，不进仓库不上网站）
+├── private-vault/              # 写作页上传的加密文章（仅密文，可公开）
 └── .github/workflows/deploy.yml  # 自动部署工作流
 ```
 
