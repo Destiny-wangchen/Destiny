@@ -16,5 +16,5 @@ export function loadBusuanzi() {
     s.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'
     s.async = true
     document.body.appendChild(s)
-  }, 100)
+  }, 500)
 }

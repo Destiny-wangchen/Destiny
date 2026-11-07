@@ -10,7 +10,13 @@ onMounted(() => loadBusuanzi())
 
 watch(
   () => route.path,
-  () => nextTick(() => loadBusuanzi())
+  (path) => {
+    // 只在进入文章页时刷新（阅读量需要按文章更新），
+    // 站内其他跳转不重新计数，避免总访问量虚高
+    if (/\/posts\//.test(path)) {
+      nextTick(() => loadBusuanzi())
+    }
+  }
 )
 </script>
 
