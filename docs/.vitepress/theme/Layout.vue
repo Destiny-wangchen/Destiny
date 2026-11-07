@@ -9,6 +9,7 @@ import ProjectsView from './components/ProjectsView.vue'
 import VaultView from './components/VaultView.vue'
 import WriteView from './components/WriteView.vue'
 import PageView from './components/PageView.vue'
+import { formatDate } from './formatDate'
 
 const { page, frontmatter } = useData()
 </script>
@@ -32,7 +33,7 @@ const { page, frontmatter } = useData()
         <header class="post-header">
           <h1 class="post-title">{{ frontmatter.title }}</h1>
           <div class="post-meta">
-            <span v-if="frontmatter.date">{{ frontmatter.date }}</span>
+            <span v-if="frontmatter.date">{{ formatDate(frontmatter.date) }}</span>
             <span v-for="t in frontmatter.tags || []" :key="t" class="tag">#{{ t }}</span>
           </div>
         </header>

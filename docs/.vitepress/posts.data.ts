@@ -1,4 +1,5 @@
 import { createContentLoader } from 'vitepress'
+import { formatDate } from './theme/formatDate'
 
 export interface PostMeta {
   url: string
@@ -18,7 +19,7 @@ export default createContentLoader('posts/*.md', {
       .map((p) => ({
         url: p.url,
         title: String(p.frontmatter.title ?? '未命名'),
-        date: String(p.frontmatter.date ?? ''),
+        date: formatDate(p.frontmatter.date),
         tags: Array.isArray(p.frontmatter.tags) ? p.frontmatter.tags.map(String) : []
       }))
       .sort((a, b) => b.date.localeCompare(a.date))
