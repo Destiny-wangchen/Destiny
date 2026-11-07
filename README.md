@@ -1,0 +1,91 @@
+﻿# Destiny 的花园
+
+个人博客，基于 [VitePress](https://vitepress.dev) 构建，部署在 GitHub Pages。
+
+线上地址：<https://destiny-wangchen.github.io/Destiny/>
+
+## 本地开发
+
+```bash
+npm install       # 首次运行安装依赖
+npm run dev       # 启动本地预览 http://localhost:5173
+npm run build     # 构建生产版本
+npm run preview   # 预览构建结果
+```
+
+## 如何写新文章
+
+1. 在 `docs/posts/` 下新建 `.md` 文件，文件名会成为 URL（如 `my-first-post.md` → `/Destiny/posts/my-first-post`）。
+2. 文件开头写 frontmatter：
+
+```md
+---
+title: 文章标题
+date: 2026-01-01
+tags:
+  - 标签一
+  - 标签二
+---
+
+正文……
+```
+
+3. 保存后 `git push`，GitHub Actions 自动构建并发布，约 1-2 分钟后线上生效。
+
+首页与归档页会自动收录新文章，无需手动维护列表。
+
+## 如何修改项目展示
+
+编辑 `docs/projects.md` 顶部的 `items` 列表，每个项目支持：
+
+```yaml
+items:
+  - name: 项目名
+    desc: 一句话简介
+    link: https://在线演示地址   # 可选
+    repo: https://github.com/用户名/仓库   # 可选
+    tags:
+      - 技术栈
+```
+
+## 首次部署步骤
+
+1. 在 GitHub 创建仓库 `Destiny-wangchen/Destiny`
+2. 推送代码：
+
+```bash
+git init
+git add .
+git commit -m "init: Destiny的花园"
+git branch -M main
+git remote add origin https://github.com/Destiny-wangchen/Destiny.git
+git push -u origin main
+```
+
+3. 打开仓库 **Settings → Pages → Build and deployment → Source**，选择 **GitHub Actions**。
+4. 等待 Actions 构建完成，访问 <https://destiny-wangchen.github.io/Destiny/>
+
+## 阅读量统计说明
+
+阅读量由第三方服务 [不蒜子](https://busuanzi.ibruce.info/) 提供（无需注册）。注意：
+
+- 文章底部显示"阅读 N 次"，页脚显示全站访问量与访客数
+- 数据保存在不蒜子的服务器上，如果该服务暂时不可用，会显示 `...`，不影响正常访问
+- 首次部署后需要等搜索引擎/外部流量触发统计基数，数值从小数字开始
+
+## 目录结构
+
+```text
+├── docs/
+│   ├── .vitepress/
+│   │   ├── config.ts           # 站点配置（标题、base、代码高亮等）
+│   │   ├── posts.data.ts       # 自动收集文章元数据
+│   │   ├── style.css           # 全局样式（极简黑白主题）
+│   │   └── theme/              # 自定义主题与组件
+│   ├── posts/                  # 博客文章
+│   ├── index.md                # 首页
+│   ├── archive.md              # 归档页
+│   ├── projects.md             # 项目展示
+│   └── public/                 # 静态资源（favicon 等）
+└── .github/workflows/deploy.yml  # 自动部署工作流
+```
