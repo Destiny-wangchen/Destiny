@@ -6,6 +6,7 @@ export interface PostMeta {
   title: string
   date: string
   tags: string[]
+  pinned: boolean
 }
 
 declare const data: PostMeta[]
@@ -20,8 +21,10 @@ export default createContentLoader('posts/*.md', {
         url: p.url,
         title: String(p.frontmatter.title ?? '未命名'),
         date: formatDate(p.frontmatter.date),
-        tags: Array.isArray(p.frontmatter.tags) ? p.frontmatter.tags.map(String) : []
+        tags: Array.isArray(p.frontmatter.tags) ? p.frontmatter.tags.map(String) : [],
+        pinned: !!p.frontmatter.pinned
       }))
-      .sort((a, b) => b.date.localeCompare(a.date))
+      // 置顶文章排最前，其余按日期倒序
+      .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.date.localeCompare(a.date))
   }
 })

@@ -7,6 +7,7 @@ const date = ref('')
 const tags = ref('')
 const body = ref('')
 const isPrivate = ref(false)
+const isPinned = ref(false)
 const slug = ref('')
 const slugTouched = ref(false)
 const copied = ref(false)
@@ -60,6 +61,7 @@ const frontmatter = computed(() => {
     lines.push('tags:')
     tagList.value.forEach((t) => lines.push(`  - ${t}`))
   }
+  if (isPinned.value) lines.push('pinned: true')
   lines.push('---', '')
   return lines.join('\n')
 })
@@ -83,11 +85,11 @@ watch(title, (t) => {
 watch(date, () => {
   if (!slugTouched.value) slug.value = suggestSlug(title.value)
 })
-watch([title, date, tags, body, isPrivate], () => {
+watch([title, date, tags, body, isPrivate, isPinned], () => {
   try {
     localStorage.setItem(
       DRAFT_KEY,
-      JSON.stringify({ title: title.value, date: date.value, tags: tags.value, body: body.value, isPrivate: isPrivate.value })
+      JSON.stringify({ title: title.value, date: date.value, tags: tags.value, body: body.value, isPrivate: isPrivate.value, isPinned: isPinned.value })
     )
   } catch {
     /* ignore */
@@ -114,6 +116,7 @@ onMounted(() => {
       tags.value = d.tags || ''
       body.value = d.body || ''
       isPrivate.value = !!d.isPrivate
+      isPinned.value = !!d.isPinned
       slug.value = suggestSlug(title.value)
     }
   } catch {
@@ -155,6 +158,7 @@ function reset() {
   tags.value = ''
   body.value = ''
   isPrivate.value = false
+  isPinned.value = false
   slug.value = ''
   slugTouched.value = false
   localStorage.removeItem(DRAFT_KEY)
@@ -284,6 +288,13 @@ async function publish() {
       @input="slugTouched = true"
     />
     <p class="hint">会成为 URL：<code>/posts/{{ fileId }}</code></p>
+  </div>
+
+  <div class="field">
+    <label class="check">
+      <input v-model="isPinned" type="checkbox" />
+      <span>置顶（显示在首页文章列表最前面）</span>
+    </label>
   </div>
 
   <div class="field">

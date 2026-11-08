@@ -18,6 +18,15 @@ const { unlocked } = useGardenSecret()
 // 花锁未解锁时，私密页与写作页一律当作不存在的页面
 const secretGuarded = () =>
   ['vault', 'write'].includes(String(frontmatter.value.layout)) && !unlocked.value
+
+// 返回：同站内来路用浏览器后退（保留列表位置），直接打开的文章回首页
+function goBack(e: MouseEvent) {
+  const ref = document.referrer
+  if (ref && new URL(ref).origin === window.location.origin && window.history.length > 1) {
+    e.preventDefault()
+    window.history.back()
+  }
+}
 </script>
 
 <template>
@@ -36,6 +45,7 @@ const secretGuarded = () =>
       <WriteView v-else-if="frontmatter.layout === 'write'" />
 
       <article v-else class="post">
+        <a class="back-link" :href="withBase('/')" @click="goBack">← 返回</a>
         <header class="post-header">
           <h1 class="post-title">{{ frontmatter.title }}</h1>
           <div class="post-meta">
@@ -54,8 +64,20 @@ const secretGuarded = () =>
 </template>
 
 <style scoped>
+.back-link {
+  display: inline-block;
+  margin-top: 2.5rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.back-link:hover {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
 .post-header {
-  margin: 2.5rem 0 1.5rem;
+  margin: 1rem 0 1.5rem;
 }
 .post-header .post-title {
   font-size: 1.75rem;

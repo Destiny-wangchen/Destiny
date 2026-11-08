@@ -15,6 +15,7 @@ const { frontmatter } = useData()
     <li v-for="p in posts" :key="p.url" class="post-item">
       <a class="post-title" :href="withBase(p.url)">{{ p.title }}</a>
       <div class="post-meta">
+        <span v-if="p.pinned" class="pin">置顶</span>
         <span class="post-date">{{ p.date }}</span>
         <span v-for="t in p.tags" :key="t" class="tag">#{{ t }}</span>
       </div>
@@ -45,6 +46,14 @@ const { frontmatter } = useData()
 }
 .post-item:last-child {
   border-bottom: none;
+}
+.pin {
+  color: var(--fg);
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0 0.4rem;
+  line-height: 1.5;
 }
 .post-title {
   font-weight: 500;
