@@ -10,24 +10,30 @@ import VaultView from './components/VaultView.vue'
 import WriteView from './components/WriteView.vue'
 import PageView from './components/PageView.vue'
 import { formatDate } from './formatDate'
+import { useGardenSecret } from './useGardenSecret'
 
 const { page, frontmatter } = useData()
+const { unlocked } = useGardenSecret()
+
+// 花锁未解锁时，私密页与写作页一律当作不存在的页面
+const secretGuarded = () =>
+  ['vault', 'write'].includes(String(frontmatter.value.layout)) && !unlocked.value
 </script>
 
 <template>
   <div class="app">
     <Header />
     <main class="container">
-      <HomeView v-if="frontmatter.layout === 'home'" />
+      <article v-if="secretGuarded() || page.isNotFound" class="not-found">
+        <h1>404</h1>
+        <p>这个页面还没有长出来，<a :href="withBase('/')">回花园看看</a>吧。</p>
+      </article>
+
+      <HomeView v-else-if="frontmatter.layout === 'home'" />
       <ArchiveView v-else-if="frontmatter.layout === 'archive'" />
       <ProjectsView v-else-if="frontmatter.layout === 'projects'" />
       <VaultView v-else-if="frontmatter.layout === 'vault'" />
       <WriteView v-else-if="frontmatter.layout === 'write'" />
-
-      <article v-else-if="page.isNotFound" class="not-found">
-        <h1>404</h1>
-        <p>这个页面还没有长出来，<a :href="withBase('/')">回花园看看</a>吧。</p>
-      </article>
 
       <article v-else class="post">
         <header class="post-header">

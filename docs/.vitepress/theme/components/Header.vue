@@ -1,27 +1,44 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useData, withBase } from 'vitepress'
 import ThemeToggle from './ThemeToggle.vue'
+import FlowerLock from './FlowerLock.vue'
+import { useGardenSecret } from '../useGardenSecret'
 
 const { site } = useData()
+const { unlocked } = useGardenSecret()
 
 // 注意：链接统一带 .html，部分静态托管（如本站使用的平台）不做无扩展名映射
-const nav = [
+const baseNav = [
   { text: '首页', link: '/' },
   { text: '归档', link: '/archive.html' },
-  { text: '项目', link: '/projects.html' },
-  { text: '私密', link: '/vault.html' }
+  { text: '项目', link: '/projects.html' }
 ]
+
+// 花锁未解锁时，「私密」入口不渲染，访客不可见
+const nav = computed(() =>
+  unlocked.value ? [...baseNav, { text: '私密', link: '/vault.html' }] : baseNav
+)
 </script>
 
 <template>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="site-title" :href="withBase('/')">{{ site.title }}</a>
+      <div class="header-left">
+        <a class="site-title" :href="withBase('/')">{{ site.title }}</a>
+        <FlowerLock />
+      </div>
       <nav class="nav">
         <a v-for="item in nav" :key="item.link" :href="withBase(item.link)">{{ item.text }}</a>
       </nav>
       <div class="header-actions">
-        <a class="icon-link" :href="withBase('/write.html')" title="写文章" aria-label="写文章">
+        <a
+          v-if="unlocked"
+          class="icon-link"
+          :href="withBase('/write.html')"
+          title="写文章"
+          aria-label="写文章"
+        >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 20h9" />
             <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
@@ -54,6 +71,11 @@ const nav = [
   display: flex;
   align-items: center;
   gap: 1.5rem;
+}
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 .site-title {
   font-weight: 600;

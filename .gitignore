@@ -3,6 +3,7 @@ docs/.vitepress/dist/
 docs/.vitepress/cache/
 private-src/
 .vault-password
+.gh-token
 .DS_Store
 
 # 私密文章的明文源文件与密码，绝不提交

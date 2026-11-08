@@ -21,6 +21,8 @@ const TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new'
 // —— 发布相关 ——
 const token = ref('')
 const showToken = ref(false)
+const showTokenField = ref(false)
+const hasToken = computed(() => !!token.value.trim())
 const vaultPw = ref('')
 const publishing = ref(false)
 const pubMsg = ref('')
@@ -243,6 +245,8 @@ async function publish() {
     pubOk.value = true
   } catch (e) {
     pubErr.value = e instanceof Error ? e.message : String(e)
+    // Token 缺失或权限失效时自动展开填写框
+    if (/401|403|Bad credentials|Token/.test(pubErr.value)) showTokenField.value = true
   } finally {
     publishing.value = false
   }
@@ -322,25 +326,42 @@ async function publish() {
 
   <div class="publish-box">
     <div class="field token-field">
-      <label>
-        GitHub Token（一键发布用，只需填一次）
-        <button class="text-btn" type="button" @click="showToken = !showToken">
-          {{ showToken ? '隐藏' : '显示' }}
-        </button>
-      </label>
-      <input
-        v-model="token"
-        :type="showToken ? 'text' : 'password'"
-        class="input mono"
-        placeholder="github_pat_… 或 ghp_…"
-        autocomplete="off"
-      />
-      <p class="hint">
-        在 <a class="inline-link" :href="TOKEN_URL" target="_blank" rel="noopener">GitHub Token 设置页</a>
-        创建：Repository access 选 <strong>Only select repositories → Destiny</strong>，
-        Permissions 给 <strong>Contents: Read and write</strong>。
-        Token 只保存在你自己的浏览器里，不会进入仓库。
-      </p>
+      <!-- 已配置：隐藏输入框，仅留一行小字；出错时自动展开 -->
+      <template v-if="hasToken && !showTokenField">
+        <p class="token-ok">
+          GitHub Token 已配置 ✓
+          <button class="text-btn" type="button" @click="showTokenField = true">更改</button>
+        </p>
+      </template>
+      <template v-else>
+        <label>
+          GitHub Token（一键发布用，只需填一次）
+          <button class="text-btn" type="button" @click="showToken = !showToken">
+            {{ showToken ? '隐藏' : '显示' }}
+          </button>
+          <button
+            v-if="hasToken"
+            class="text-btn"
+            type="button"
+            @click="showTokenField = false"
+          >
+            收起
+          </button>
+        </label>
+        <input
+          v-model="token"
+          :type="showToken ? 'text' : 'password'"
+          class="input mono"
+          placeholder="github_pat_… 或 ghp_…"
+          autocomplete="off"
+        />
+        <p class="hint">
+          在 <a class="inline-link" :href="TOKEN_URL" target="_blank" rel="noopener">GitHub Token 设置页</a>
+          创建：Repository access 选 <strong>Only select repositories → Destiny</strong>，
+          Permissions 给 <strong>Contents: Read and write</strong>。
+          Token 只保存在你自己的浏览器里，不会进入仓库。
+        </p>
+      </template>
     </div>
 
     <div class="actions">
@@ -522,6 +543,14 @@ async function publish() {
   background: var(--code-bg);
   border-radius: 6px;
   padding: 0.6rem 0.9rem;
+}
+.token-ok {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 .pub-err {
   margin: 0.9rem 0 0;
