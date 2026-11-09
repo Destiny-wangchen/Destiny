@@ -19,6 +19,8 @@ export default defineConfig({
   ],
   markdown: {
     lineNumbers: false,
+    // 单个回车即换行，与写作页输入/预览保持一致
+    breaks: true,
     theme: { light: 'github-light', dark: 'github-dark' }
   },
   themeConfig: {
