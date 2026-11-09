@@ -6,6 +6,8 @@ import Footer from './components/Footer.vue'
 import HomeView from './components/HomeView.vue'
 import ArchiveView from './components/ArchiveView.vue'
 import ProjectsView from './components/ProjectsView.vue'
+import AppsView from './components/AppsView.vue'
+import QuizApp from './components/QuizApp.vue'
 import VaultView from './components/VaultView.vue'
 import WriteView from './components/WriteView.vue'
 import PageView from './components/PageView.vue'
@@ -41,6 +43,8 @@ function goBack(e: MouseEvent) {
       <HomeView v-else-if="frontmatter.layout === 'home'" />
       <ArchiveView v-else-if="frontmatter.layout === 'archive'" />
       <ProjectsView v-else-if="frontmatter.layout === 'projects'" />
+      <AppsView v-else-if="frontmatter.layout === 'apps'" />
+      <QuizApp v-else-if="frontmatter.layout === 'quiz'" />
       <VaultView v-else-if="frontmatter.layout === 'vault'" />
       <WriteView v-else-if="frontmatter.layout === 'write'" />
 

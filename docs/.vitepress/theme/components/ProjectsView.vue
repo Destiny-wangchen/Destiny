@@ -1,10 +1,11 @@
 ﻿<script setup lang="ts">
-import { useData } from 'vitepress'
+import { useData, withBase } from 'vitepress'
 
 interface Project {
   name: string
   desc: string
   link?: string
+  app?: string
   repo?: string
   tags?: string[]
 }
@@ -20,7 +21,11 @@ const items = (frontmatter.value.items ?? []) as Project[]
   <ul class="project-list">
     <li v-for="p in items" :key="p.name" class="project-card">
       <div class="project-head">
-        <a v-if="p.link" class="project-name" :href="p.link" target="_blank" rel="noopener">
+        <!-- app: 站内应用页跳转；link: 外部链接 -->
+        <a v-if="p.app" class="project-name" :href="withBase(p.app)">
+          {{ p.name }} →
+        </a>
+        <a v-else-if="p.link" class="project-name" :href="p.link" target="_blank" rel="noopener">
           {{ p.name }} ↗
         </a>
         <span v-else class="project-name">{{ p.name }}</span>
