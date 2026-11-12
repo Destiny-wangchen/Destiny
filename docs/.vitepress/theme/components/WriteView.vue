@@ -26,8 +26,8 @@ const showToken = ref(false)
 const showTokenField = ref(false)
 const hasToken = computed(() => !!token.value.trim())
 const vaultPw = ref('')
-// 隐藏文章的解锁方式：勾选后忽略密码，改为博尔赫斯诗句署名彩蛋
-const eggUnlock = ref(false)
+// 隐藏文章解锁方式：无需密码 / 保险箱密码 / 博尔赫斯彩蛋
+const unlockMode = ref<'open' | 'pw' | 'egg'>('open')
 const publishing = ref(false)
 const pubMsg = ref('')
 const pubErr = ref('')
@@ -231,24 +231,29 @@ async function publish() {
     pubErr.value = '请先填写 GitHub Token（只需要填一次，会保存在这台设备上）'
     return
   }
+  if (isPrivate.value && unlockMode.value === 'pw' && !vaultPw.value) {
+    pubErr.value = '解锁方式选了「保险箱密码」，请填写密码（想免密直读请改选「无需密码」）'
+    return
+  }
+
   publishing.value = true
   try {
     if (isPrivate.value) {
       const payload = { title: title.value.trim(), tags: tagList.value, body: '\n' + body.value.trim() + '\n' }
-      if (eggUnlock.value) {
+      if (unlockMode.value === 'egg') {
         // 彩蛋：固定派生密钥轻度混淆，访客在首页诗句署名点中「博尔赫斯」后出现在密文页
         const enc = await encryptForVault(payload, EGG_KEY)
         const entry = { id: fileId.value, date: date.value || today(), egg: true, ...enc }
         await ghPut(`private-vault/${fileId.value}.json`, JSON.stringify(entry, null, 2), `publish(彩蛋): ${title.value.trim()}`)
         pubMsg.value = `彩蛋发布成功！「${title.value.trim()}」将藏入密文页——访客在首页诗句署名点中「博尔赫斯」后现身。`
-      } else if (vaultPw.value) {
-        // 有密码：正文在浏览器本地加密，仓库与服务器只会拿到密文
+      } else if (unlockMode.value === 'pw') {
+        // 保险箱密码：正文在浏览器本地加密，仓库与服务器只会拿到密文
         const enc = await encryptForVault(payload, vaultPw.value)
         const entry = { id: fileId.value, date: date.value || today(), ...enc }
         await ghPut(`private-vault/${fileId.value}.json`, JSON.stringify(entry, null, 2), `publish(加密): ${title.value.trim()}`)
         pubMsg.value = `加密发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在「密文」页，输入保险箱密码即可查看。`
       } else {
-        // 不填密码：免密发布，进「密文」页即可阅读（仍受花锁门禁保护）
+        // 无需密码：进「密文」页即可阅读（仍受花锁门禁保护）
         const entry = { id: fileId.value, date: date.value || today(), plain: true, payload }
         await ghPut(`private-vault/${fileId.value}.json`, JSON.stringify(entry, null, 2), `publish(密文·免密): ${title.value.trim()}`)
         pubMsg.value = `发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在「密文」页，无需密码即可阅读。`
@@ -560,26 +565,36 @@ async function confirmDel() {
       <span>隐藏文章（不进入公开列表，只出现在「密文」页）</span>
     </label>
     <p v-if="isPrivate" class="hint">
-      三种解锁方式：<strong>填密码</strong>——正文加密后才上传，拿到密码的人输入同一密码阅读；
-      <strong>留空</strong>——免密发布，进入「密文」页即可直接阅读；
-      <strong>博尔赫斯彩蛋</strong>——勾选下方选项，访客在首页诗句署名点中「博尔赫斯」才能解锁。
+      选一种解锁方式：访客进入「密文」页后，<strong>无需密码</strong>直接阅读；
+      <strong>保险箱密码</strong>要输对才能看；<strong>博尔赫斯彩蛋</strong>要先在首页点中诗句署名里的「博尔赫斯」。
     </p>
   </div>
 
   <div v-if="isPrivate" class="field">
-    <label class="check">
-      <input v-model="eggUnlock" type="checkbox" />
-      <span>博尔赫斯彩蛋解锁（勾选后忽略上方密码）</span>
-    </label>
+    <label>解锁方式（三选一）</label>
+    <div class="mode-group">
+      <label class="check mode-item">
+        <input v-model="unlockMode" type="radio" value="open" />
+        <span>无需密码（进「密文」页直接读）</span>
+      </label>
+      <label class="check mode-item">
+        <input v-model="unlockMode" type="radio" value="pw" />
+        <span>保险箱密码（填了才加密）</span>
+      </label>
+      <label class="check mode-item">
+        <input v-model="unlockMode" type="radio" value="egg" />
+        <span>博尔赫斯彩蛋（首页诗句署名触发）</span>
+      </label>
+    </div>
   </div>
 
-  <div v-if="isPrivate && !eggUnlock" class="field">
-    <label>保险箱密码（可选——填了加密，留空免密直读）</label>
+  <div v-if="isPrivate && unlockMode === 'pw'" class="field">
+    <label>保险箱密码</label>
     <input
       v-model="vaultPw"
       type="password"
       class="input"
-      placeholder="留空 = 免密发布；填写 = 加密发布"
+      placeholder="访客将在「密文」页输入它来阅读"
       autocomplete="off"
     />
   </div>
@@ -665,9 +680,9 @@ async function confirmDel() {
     </p>
     <p>
       <strong>隐藏文章</strong>：勾选「隐藏文章」后点「一键发布」，文章只出现在「
-      <a class="inline-link" href="/Destiny/vault.html">密文</a>」页。三种解锁方式——
-      填密码：加密发布，拿到密码的人输入后阅读；留空：免密发布，进页即可读；
-      勾选「博尔赫斯彩蛋」：访客在首页诗句署名点中「博尔赫斯」后，密文页凭空多出这篇文章。
+      <a class="inline-link" href="/Destiny/vault.html">密文</a>」页。三种解锁方式（三选一）——
+      无需密码：进页直接读；保险箱密码：加密发布，拿到密码的人输入后阅读；
+      博尔赫斯彩蛋：访客在首页诗句署名点中「博尔赫斯」后，密文页凭空多出这篇文章。
     </p>
   </div>
   </template>
@@ -866,6 +881,16 @@ async function confirmDel() {
 }
 .inline-link:hover {
   text-decoration-color: var(--fg);
+}
+.mode-group {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.mode-item {
+  cursor: pointer;
 }
 .check {
   display: inline-flex;
