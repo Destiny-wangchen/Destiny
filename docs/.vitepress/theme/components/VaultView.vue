@@ -139,8 +139,8 @@ onMounted(() => {
   <h1 class="page-title">密文</h1>
   <p class="page-desc">只有拿得到密码的人才打得开。内容在本地解密，服务端只存密文。</p>
 
-  <!-- 解锁后：左缘引路话（与首页诗句石刻同位置，横排分行） -->
-  <aside v-if="unlocked" class="vault-intro">
+  <!-- 解锁后（密码或彩蛋任一）：左缘引路话（与首页诗句石刻同位置，横排分行） -->
+  <aside v-if="unlocked || eggOpen" class="vault-intro">
     <p v-for="(l, i) in introLines" :key="i">{{ l }}</p>
   </aside>
 
@@ -149,47 +149,58 @@ onMounted(() => {
     <code>npm run lock</code>。
   </p>
 
-  <!-- 有加密内容且未解锁时才出现密码框 -->
-  <form v-if="secretCount && !unlocked" class="unlock" @submit.prevent="unlock(password)">
-    <input
-      v-model="password"
-      type="password"
-      class="pw-input"
-      placeholder="输入密码，解锁加密文章"
-      autocomplete="current-password"
-    />
-    <button class="btn" type="submit" :disabled="busy">
-      {{ busy ? '解锁中…' : '解锁' }}
-    </button>
-  </form>
-
   <p v-if="noCrypto" class="error">
     当前环境不支持浏览器解密（需要 https 或 localhost 打开），请换用安全的连接访问。
   </p>
 
-  <p v-if="error" class="error">{{ error }}</p>
-
-  <template v-if="displayItems.length">
+  <template v-if="displayItems.length || secretCount">
     <div class="vault-bar">
-      <span>{{ displayItems.length }} 篇<template v-if="secretCount && !unlocked">（免密）</template></span>
-      <button v-if="secretCount && unlocked" class="btn ghost" type="button" @click="lock">锁定</button>
+      <span>{{ displayItems.length }} 篇<template v-if="secretCount && !unlocked">（另有 {{ secretCount }} 篇待密钥解锁）</template></span>
     </div>
 
     <div class="vault-layout">
-      <!-- 左：文章列表 -->
-      <nav class="vault-list">
-        <button
-          v-for="(item, i) in displayItems"
-          :key="i"
-          class="vault-head"
-          :class="{ active: openIndex === i }"
-          type="button"
-          @click="toggle(i)"
-        >
-          <span class="vault-title">{{ item.title }}</span>
-          <span class="vault-date">{{ simplifyDate(item.date) }}</span>
-        </button>
-      </nav>
+      <!-- 左：文章列表 + 常驻密钥输入区 -->
+      <div class="vault-side">
+        <nav v-if="displayItems.length" class="vault-list">
+          <button
+            v-for="(item, i) in displayItems"
+            :key="i"
+            class="vault-head"
+            :class="{ active: openIndex === i }"
+            type="button"
+            @click="toggle(i)"
+          >
+            <span class="vault-title">{{ item.title }}</span>
+            <span class="vault-date">{{ simplifyDate(item.date) }}</span>
+          </button>
+        </nav>
+        <p v-else class="hint-empty">
+          还有 {{ secretCount }} 篇加密文章，输入密钥后出现。
+        </p>
+
+        <!-- 密钥输入区：常驻，与彩蛋解锁互不影响 -->
+        <div v-if="secretCount" class="key-box">
+          <p class="key-label">密钥 · 解锁 {{ secretCount }} 篇加密文章</p>
+          <form v-if="!unlocked" class="unlock" @submit.prevent="unlock(password)">
+            <input
+              v-model="password"
+              type="password"
+              class="pw-input"
+              placeholder="输入密钥"
+              autocomplete="current-password"
+            />
+            <button class="btn" type="submit" :disabled="busy">
+              {{ busy ? '解锁中…' : '解锁' }}
+            </button>
+          </form>
+          <div v-else class="key-status">
+            <span class="key-ok">已解锁</span>
+            <button class="btn ghost" type="button" @click="lock">锁定</button>
+          </div>
+          <p v-if="error" class="error">{{ error }}</p>
+          <p v-if="eggOpen && eggItems.length" class="key-egg">彩蛋已开启 · {{ eggItems.length }} 篇</p>
+        </div>
+      </div>
 
       <!-- 右：当前文章完整正文，横排正常换行 -->
       <div v-if="displayItems[openIndex]" class="vault-reader">
@@ -204,9 +215,6 @@ onMounted(() => {
       </div>
     </div>
   </template>
-  <p v-else-if="secretCount && !unlocked" class="hint-empty">
-    还有 {{ secretCount }} 篇加密文章，输入上方密码后出现。
-  </p>
 </template>
 
 <style scoped>
@@ -310,6 +318,46 @@ onMounted(() => {
   border-bottom: 1px solid var(--border);
   padding-bottom: 0.6rem;
   margin-bottom: 0.5rem;
+}
+/* —— 左栏（列表 + 密钥区）—— */
+.vault-side {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+.key-box {
+  padding: 0.75rem 0.85rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 0.5rem;
+}
+.key-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+.key-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.key-ok {
+  color: var(--fg);
+  font-size: 0.8125rem;
+}
+.key-egg {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+.key-box .unlock {
+  margin-bottom: 0;
+}
+.key-box .error {
+  margin: 0;
 }
 /* —— 左列表 + 右正文 —— */
 .vault-layout {
