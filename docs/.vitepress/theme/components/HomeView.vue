@@ -2,6 +2,7 @@
 import { withBase, useData } from 'vitepress'
 import { data as posts } from '../../posts.data'
 import { simplifyDate } from '../formatDate'
+import VerseStone from './VerseStone.vue'
 
 const { frontmatter } = useData()
 </script>
@@ -11,6 +12,8 @@ const { frontmatter } = useData()
     <h1 class="intro-title">{{ frontmatter.title }}</h1>
     <p class="intro-desc">{{ frontmatter.description }}</p>
   </section>
+
+  <VerseStone />
 
   <ul class="post-list">
     <li v-for="p in posts" :key="p.url" class="post-item">
