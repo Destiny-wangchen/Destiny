@@ -11,6 +11,7 @@ import { createCipheriv, pbkdf2Sync, randomBytes } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { readExistingEntries, reuseIfUnchanged } from './vault-reuse.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const vaultDir = join(root, 'private-vault')
@@ -53,6 +54,8 @@ function parseFrontmatter(raw) {
 }
 
 const byId = new Map()
+// 上一次产物里的条目：明文没变的直接复用旧密文，避免每次构建都产生无意义 diff
+const previous = readExistingEntries(outFile)
 
 // 来源 1：浏览器上传的密文（公开仓库中仅存密文）
 if (existsSync(vaultDir)) {
@@ -80,7 +83,10 @@ if (existsSync(srcDir) && existsSync(pwFile)) {
         tags: Array.isArray(data.tags) ? data.tags.map(String) : data.tags ? [String(data.tags)] : [],
         body
       }
-      const { salt, iv, ct } = encrypt(JSON.stringify(payload), pw)
+      const plaintext = JSON.stringify(payload)
+      const reused = reuseIfUnchanged(previous, id, plaintext, pw)
+      const { salt, iv, ct } = reused ?? encrypt(plaintext, pw)
+      if (reused) console.log(`  = ${f} 明文未变，复用原密文`)
       byId.set(id, { id, date: String(data.date ?? ''), salt, iv, ct, iter: ITER })
     }
   }
@@ -88,6 +94,14 @@ if (existsSync(srcDir) && existsSync(pwFile)) {
 
 const entries = [...byId.values()]
 const header = `// 由 scripts/gen-vault.mjs 生成（npm run build 时自动执行），请勿手改。\nimport type { VaultEntry } from './theme/vault'\n\nconst entries: VaultEntry[] = `
-writeFileSync(outFile, `${header}${JSON.stringify(entries, null, 2)}\n\nexport default entries\n`, 'utf8')
-
-console.log(`vault: ${entries.length} 篇私密内容 -> docs/.vitepress/vault-data.ts`)
+const content = `${header}${JSON.stringify(entries, null, 2)}\n\nexport default entries\n`
+// 内容一字未改就不落盘：省掉一次无意义的写入，也避免 dev server 被自己触发的改动重载。
+// 比较前统一换行符——Windows 上 checkout 出来可能是 CRLF，按字节比会误判成「变了」。
+const sameAsBefore =
+  existsSync(outFile) && readFileSync(outFile, 'utf8').replace(/\r\n/g, '\n') === content
+if (sameAsBefore) {
+  console.log(`vault: ${entries.length} 篇私密内容，产物无变化（未写入）`)
+} else {
+  writeFileSync(outFile, content, 'utf8')
+  console.log(`vault: ${entries.length} 篇私密内容 -> docs/.vitepress/vault-data.ts`)
+}

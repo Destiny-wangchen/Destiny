@@ -11,6 +11,7 @@ import { createCipheriv, pbkdf2Sync, randomBytes } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { readExistingEntries, reuseIfUnchanged } from './vault-reuse.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const srcDir = join(root, 'private-src')
@@ -67,6 +68,7 @@ function main() {
   const password = getPassword()
   if (!existsSync(srcDir)) mkdirSync(srcDir, { recursive: true })
   const files = readdirSync(srcDir).filter((f) => f.endsWith('.md'))
+  const previous = readExistingEntries(outFile)
 
   const entries = files.map((file) => {
     const raw = readFileSync(join(srcDir, file), 'utf8')
@@ -77,9 +79,11 @@ function main() {
       tags: Array.isArray(data.tags) ? data.tags.map(String) : data.tags ? [String(data.tags)] : [],
       body
     }
-    const { salt, iv, ct } = encrypt(JSON.stringify(payload), password)
+    const plaintext = JSON.stringify(payload)
+    const reused = reuseIfUnchanged(previous, id, plaintext, password)
+    const { salt, iv, ct } = reused ?? encrypt(plaintext, password)
     const date = String(data.date ?? '')
-    console.log(`  ✓ ${file}  ${payload.title}`)
+    console.log(`  ${reused ? '=' : '✓'} ${file}  ${payload.title}${reused ? '（明文未变，复用原密文）' : ''}`)
     return { id, date, salt, iv, ct, iter: ITER }
   })
 

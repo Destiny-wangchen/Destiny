@@ -3,8 +3,10 @@ import { webcrypto as crypto } from 'node:crypto'
 
 const root = 'C:/Users/Bruce/CodeBuddy/20261107174057'
 const src = readFileSync(`${root}/docs/.vitepress/vault-data.ts`, 'utf8')
-const json = src.slice(src.indexOf('= [') + 2, src.lastIndexOf('\n\nexport default'))
-const entries = JSON.parse(json)
+// 别按 '\n\nexport default' 硬切：Windows 上换行可能是 CRLF，会切错位置
+const start = src.indexOf('= [') + 2
+const tail = src.lastIndexOf('export default')
+const entries = JSON.parse(src.slice(start, src.lastIndexOf(']', tail) + 1))
 const password = readFileSync(`${root}/.vault-password`, 'utf8').trim()
 
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0))

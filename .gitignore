@@ -1,10 +1,14 @@
 ﻿node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
+docs/.vitepress/.temp/
 private-src/
 .vault-password
 .gh-token
 .DS_Store
+
+# 构建期临时目录（vitepress 每次 build 都会重写，不该进版本库）
+docs/.vitepress/.temp/
 
 # 私密文章的明文源文件与密码，绝不提交
 private-src/
