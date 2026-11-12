@@ -1,5 +1,9 @@
 ﻿<script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { useGardenSecret } from '../useGardenSecret'
+
+// 花锁解锁 = 站长身份，显示评论管理入口
+const { unlocked } = useGardenSecret()
 
 const box = ref<HTMLDivElement | null>(null)
 let ob: MutationObserver | undefined
@@ -18,8 +22,9 @@ function create() {
   s.crossOrigin = 'anonymous'
   s.setAttribute('data-repo', 'Destiny-wangchen/Destiny')
   s.setAttribute('data-repo-id', 'R_kgDOVmIlwQ')
-  s.setAttribute('data-category', 'Announcements')
-  s.setAttribute('data-category-id', 'DIC_kwDOVmIlwc4DK7_-')
+  // 必须用 General：Announcements 分类只有管理员能开讨论，访客会发不了言
+  s.setAttribute('data-category', 'General')
+  s.setAttribute('data-category-id', 'DIC_kwDOVmIlwc4DK7__')
   s.setAttribute('data-mapping', 'pathname')
   s.setAttribute('data-strict', '0')
   s.setAttribute('data-reactions-enabled', '1')
@@ -50,7 +55,17 @@ onBeforeUnmount(() => ob?.disconnect())
 
 <template>
   <div class="giscus-wrap">
-    <p class="giscus-title">留言</p>
+    <p class="giscus-title">
+      留言
+      <!-- 站长通道：花锁解锁后才可见，直达 Discussions 管理页 -->
+      <a
+        v-if="unlocked"
+        class="giscus-admin"
+        href="https://github.com/Destiny-wangchen/Destiny/discussions"
+        target="_blank"
+        rel="noopener"
+      >管理评论 →</a>
+    </p>
     <div ref="box" class="giscus"></div>
   </div>
 </template>
@@ -65,5 +80,15 @@ onBeforeUnmount(() => ob?.disconnect())
   margin: 0 0 1rem;
   color: var(--muted);
   font-size: 0.875rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.giscus-admin {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.giscus-admin:hover {
+  color: var(--fg);
 }
 </style>
