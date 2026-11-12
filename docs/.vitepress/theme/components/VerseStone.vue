@@ -1,6 +1,7 @@
 ﻿<script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import verses from '../../../verses.json'
+import { EGG_FLAG } from '../vault'
 
 interface Verse {
   text: string
@@ -15,6 +16,8 @@ const current = ref<Verse | null>(null)
 const clauses = ref<string[]>([])
 // 兜底字号：正常情况下 13px 即可，仅未来出现超长分句时才收缩
 const fs = ref(13)
+// 署名点击动效：hit = 命中博尔赫斯彩蛋，miss = 未命中轻微回应
+const signFx = ref('')
 
 /** 按中英文标点切分句，标点留在句尾 */
 function splitClauses(text: string): string[] {
@@ -34,6 +37,23 @@ function onResize() {
   fit()
 }
 
+/**
+ * 署名彩蛋：任何署名都可点击；
+ * 只有诗句作者为博尔赫斯时才解锁密文页的彩蛋文章（会话级），
+ * 其他作者只做轻微动效，不泄底。
+ */
+function onSign() {
+  const v = current.value
+  if (!v || signFx.value) return
+  if (v.author.includes('博尔赫斯')) {
+    sessionStorage.setItem(EGG_FLAG, '1')
+    signFx.value = 'hit'
+  } else {
+    signFx.value = 'miss'
+  }
+  window.setTimeout(() => (signFx.value = ''), 900)
+}
+
 onMounted(() => {
   if (!pool.length) return
   current.value = pool[Math.floor(Math.random() * pool.length)]
@@ -50,13 +70,24 @@ onBeforeUnmount(() => window.removeEventListener('resize', onResize))
     <!-- 大屏：左缘竖排石刻，按分句一句一列，自右向左排列 -->
     <aside class="verse-stone" :style="{ fontSize: fs + 'px' }" aria-hidden="true">
       <span v-for="(c, i) in clauses" :key="i" class="stone-col">{{ c }}</span>
-      <span class="stone-col stone-sign">—— {{ current.author }}{{ current.from }}</span>
+      <span
+        class="stone-col stone-sign"
+        :class="signFx"
+        role="button"
+        :title="`—— ${current.author}`"
+        @click="onSign"
+      >—— {{ current.author }}{{ current.from }}</span>
     </aside>
 
     <!-- 小屏：横排一句，置于简介下方 -->
     <blockquote class="verse-inline">
       <p class="inline-text">{{ current.text }}</p>
-      <p class="inline-sign">—— {{ current.author }}{{ current.from }}</p>
+      <p
+        class="inline-sign"
+        :class="signFx"
+        role="button"
+        @click="onSign"
+      >—— {{ current.author }}{{ current.from }}</p>
     </blockquote>
   </template>
 </template>
@@ -101,6 +132,39 @@ onBeforeUnmount(() => window.removeEventListener('resize', onResize))
     font-size: 0.78em;
     letter-spacing: 0.14em;
     opacity: 0.6;
+    /* 石刻整体 pointer-events: none，仅署名恢复可点 */
+    pointer-events: auto;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .stone-sign:hover {
+    opacity: 1;
+  }
+  .stone-sign.miss {
+    animation: sign-miss 0.9s ease;
+  }
+  .stone-sign.hit {
+    animation: sign-hit 0.9s ease;
+  }
+}
+
+@keyframes sign-miss {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  30% {
+    opacity: 0.85;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes sign-hit {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  35%, 65% {
+    opacity: 1;
+    transform: translateY(-6px);
   }
 }
 
@@ -130,6 +194,17 @@ onBeforeUnmount(() => window.removeEventListener('resize', onResize))
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   opacity: 0.8;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.verse-inline .inline-sign:hover {
+  opacity: 1;
+}
+.verse-inline .inline-sign.miss {
+  animation: sign-miss 0.9s ease;
+}
+.verse-inline .inline-sign.hit {
+  animation: sign-hit 0.9s ease;
 }
 
 @media (min-width: 1200px) {

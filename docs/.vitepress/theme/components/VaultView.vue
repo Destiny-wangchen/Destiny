@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { marked } from 'marked'
 import entries from '../../vault-data'
-import { decryptEntry, isPlainEntry, type VaultEntry, type VaultPayload } from '../vault'
+import { decryptEntry, isEggEntry, isPlainEntry, EGG_KEY, EGG_FLAG, type VaultEntry, type VaultPayload } from '../vault'
 import { simplifyDate } from '../formatDate'
 
 interface Item extends VaultPayload {
@@ -31,16 +31,23 @@ const plainItems = ref<Item[]>(
   entries.filter(isPlainEntry).map((e) => toItem(e.payload, e.date))
 )
 
-// 加密条目：需要密码解锁
-const secretEntries = entries.filter((e) => !isPlainEntry(e)) as VaultEntry[]
+// 加密条目：需要密码解锁（排除免密与彩蛋）
+const secretEntries = entries.filter((e) => !isPlainEntry(e) && !isEggEntry(e)) as VaultEntry[]
+
+// 彩蛋条目：首页诗句署名点中「博尔赫斯」后解锁（会话级）
+const eggEntries = entries.filter(isEggEntry)
+const eggOpen = ref(sessionStorage.getItem(EGG_FLAG) === '1')
+const eggItems = ref<Item[]>([])
 const secretCount = secretEntries.length
 
 // 没有加密内容时视为「已解锁」，不出现密码框
 const unlocked = ref(secretCount === 0)
 
-// 展示列表 = 免密 + 已解锁的加密，按日期倒序
+// 展示列表 = 免密 + 已触发的彩蛋 + 已解锁的加密，按日期倒序
 const displayItems = computed(() =>
-  [...plainItems.value, ...secretItems.value].sort((a, b) => b.date.localeCompare(a.date))
+  [...plainItems.value, ...(eggOpen.value ? eggItems.value : []), ...secretItems.value].sort(
+    (a, b) => b.date.localeCompare(a.date)
+  )
 )
 
 async function unlock(pw: string) {
@@ -106,6 +113,19 @@ const introLines = [
 const noCrypto = ref(false)
 
 onMounted(() => {
+  // 彩蛋已触发：解出彩蛋文章
+  if (eggOpen.value && eggEntries.length && window.crypto && window.crypto.subtle) {
+    Promise.all(
+      eggEntries.map(async (entry) => {
+        try {
+          const payload = await decryptEntry(entry, EGG_KEY)
+          eggItems.value.push(toItem(payload, entry.date))
+        } catch {
+          /* 混淆密钥不匹配则忽略 */
+        }
+      })
+    )
+  }
   if (secretCount && !(window.crypto && window.crypto.subtle)) {
     noCrypto.value = true
     return

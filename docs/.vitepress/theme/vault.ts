@@ -30,11 +30,35 @@ export interface PlainVaultEntry {
   payload: VaultPayload
 }
 
-export type AnyVaultEntry = VaultEntry | PlainVaultEntry
+/**
+ * 彩蛋条目：用固定派生密钥轻度混淆的文章。
+ * 入口是首页诗句署名彩蛋（点中博尔赫斯），防君子不防有心人。
+ */
+export interface EggVaultEntry {
+  id: string
+  date: string
+  egg: true
+  salt: string
+  iv: string
+  ct: string
+  iter: number
+}
+
+export type AnyVaultEntry = VaultEntry | PlainVaultEntry | EggVaultEntry
 
 export function isPlainEntry(e: AnyVaultEntry): e is PlainVaultEntry {
   return 'plain' in e && e.plain === true
 }
+
+export function isEggEntry(e: AnyVaultEntry): e is EggVaultEntry {
+  return 'egg' in e && e.egg === true
+}
+
+/** 彩蛋混淆密钥：与首页诗句署名彩蛋呼应，仅起混淆作用 */
+export const EGG_KEY = 'borges-garden-of-forking-paths-1941'
+
+/** 彩蛋触发标记（sessionStorage，会话级） */
+export const EGG_FLAG = 'garden-egg-unlocked'
 
 export interface VaultPayload {
   title: string
@@ -67,8 +91,11 @@ async function deriveKey(password: string, salt: Uint8Array, iterations: number)
   )
 }
 
-/** 解密单条记录，密码不对时抛错 */
-export async function decryptEntry(entry: VaultEntry, password: string): Promise<VaultPayload> {
+/** 解密单条记录，密码不对时抛错（加密与彩蛋条目通用） */
+export async function decryptEntry(
+  entry: VaultEntry | EggVaultEntry,
+  password: string
+): Promise<VaultPayload> {
   const key = await deriveKey(password, b64ToBytes(entry.salt), entry.iter)
   const plain = await crypto.subtle.decrypt(
     { name: 'AES-GCM', iv: b64ToBytes(entry.iv) as unknown as BufferSource },

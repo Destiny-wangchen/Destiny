@@ -29,6 +29,10 @@ for (const e of entries) {
     console.log(`免密条目：${e.payload.title} / 正文 ${e.payload.body.trim().length} 字（无需解密）`)
     continue
   }
+  if (e.egg) {
+    console.log(`彩蛋条目：${e.id}（固定混淆密钥，跳过校验）`)
+    continue
+  }
   const p = await decrypt(e)
   console.log(`解密成功：${p.title} / 标签 ${p.tags.join(',')} / 正文 ${p.body.trim().length} 字`)
 }

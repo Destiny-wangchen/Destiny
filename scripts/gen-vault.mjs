@@ -64,6 +64,7 @@ if (existsSync(vaultDir)) {
       const e = JSON.parse(readFileSync(join(vaultDir, f), 'utf8'))
       if (e && e.salt && e.iv && e.ct) byId.set(e.id ?? f.replace(/\.json$/, ''), e)
       else if (e && e.plain && e.payload) byId.set(e.id ?? f.replace(/\.json$/, ''), e)
+      else if (e && e.egg && e.salt && e.iv && e.ct) byId.set(e.id ?? f.replace(/\.json$/, ''), e)
     } catch (err) {
       console.warn(`  ! 跳过无效文件 ${f}: ${err.message}`)
     }
