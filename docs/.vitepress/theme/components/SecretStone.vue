@@ -1,12 +1,12 @@
 ﻿<script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import entries from '../../vault-data'
-import { decryptEntry } from '../vault'
+import { decryptEntry, isPlainEntry, type VaultPayload } from '../vault'
 import { useGardenSecret } from '../useGardenSecret'
 
 const { unlocked } = useGardenSecret()
 
-// 与私密页共用同一把会话密码
+// 与密文页共用同一把会话密码
 const PW_KEY = 'garden-vault-pw'
 
 const asking = ref(false)
@@ -77,6 +77,13 @@ function onResize() {
 }
 
 function activate() {
+  // 最新一篇若为免密条目，无需密码直接显示摘句
+  const latest = [...entries].sort((a, b) => b.date.localeCompare(a.date))[0]
+  if (latest && isPlainEntry(latest)) {
+    setExcerpt(latest.payload as VaultPayload)
+    asking.value = false
+    return
+  }
   const saved = sessionStorage.getItem(PW_KEY)
   if (saved) tryUnlock(saved, false)
   else asking.value = true

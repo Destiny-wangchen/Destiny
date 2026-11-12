@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { marked } from 'marked'
 import entries from '../../vault-data'
-import { decryptEntry, type VaultEntry, type VaultPayload } from '../vault'
+import { decryptEntry, isPlainEntry, type VaultEntry, type VaultPayload } from '../vault'
 import { simplifyDate } from '../formatDate'
 
 interface Item extends VaultPayload {
@@ -13,15 +13,35 @@ interface Item extends VaultPayload {
 const password = ref('')
 const error = ref('')
 const busy = ref(false)
-const unlocked = ref(false)
-const items = ref<Item[]>([])
-const openIndex = ref(-1)
+const secretItems = ref<Item[]>([])
+const openIndex = ref(0)
 
 const STORAGE_KEY = 'garden-vault-pw'
 
 function render(body: string) {
   return marked.parse(body, { gfm: true, breaks: true }) as string
 }
+
+function toItem(payload: VaultPayload, date: string): Item {
+  return { ...payload, date, html: render(payload.body) }
+}
+
+// 免密条目：无需密码，进页即读
+const plainItems = ref<Item[]>(
+  entries.filter(isPlainEntry).map((e) => toItem(e.payload, e.date))
+)
+
+// 加密条目：需要密码解锁
+const secretEntries = entries.filter((e) => !isPlainEntry(e)) as VaultEntry[]
+const secretCount = secretEntries.length
+
+// 没有加密内容时视为「已解锁」，不出现密码框
+const unlocked = ref(secretCount === 0)
+
+// 展示列表 = 免密 + 已解锁的加密，按日期倒序
+const displayItems = computed(() =>
+  [...plainItems.value, ...secretItems.value].sort((a, b) => b.date.localeCompare(a.date))
+)
 
 async function unlock(pw: string) {
   if (!pw) {
@@ -33,10 +53,10 @@ async function unlock(pw: string) {
   const list: Item[] = []
   const failed: VaultEntry[] = []
 
-  for (const entry of entries) {
+  for (const entry of secretEntries) {
     try {
       const payload = await decryptEntry(entry, pw)
-      list.push({ ...payload, date: entry.date, html: render(payload.body) })
+      list.push(toItem(payload, entry.date))
     } catch {
       failed.push(entry)
     }
@@ -49,8 +69,7 @@ async function unlock(pw: string) {
     return
   }
 
-  list.sort((a, b) => b.date.localeCompare(a.date))
-  items.value = list
+  secretItems.value = list
   unlocked.value = true
   openIndex.value = 0
   sessionStorage.setItem(STORAGE_KEY, pw)
@@ -59,9 +78,9 @@ async function unlock(pw: string) {
 
 function lock() {
   password.value = ''
-  items.value = []
-  unlocked.value = false
-  openIndex.value = -1
+  secretItems.value = []
+  unlocked.value = secretCount === 0
+  openIndex.value = 0
   sessionStorage.removeItem(STORAGE_KEY)
 }
 
@@ -72,12 +91,12 @@ function toggle(i: number) {
 const noCrypto = ref(false)
 
 onMounted(() => {
-  if (!(window.crypto && window.crypto.subtle)) {
+  if (secretCount && !(window.crypto && window.crypto.subtle)) {
     noCrypto.value = true
     return
   }
   const saved = sessionStorage.getItem(STORAGE_KEY)
-  if (saved && entries.length) unlock(saved)
+  if (saved && secretCount) unlock(saved)
 })
 </script>
 
@@ -90,12 +109,13 @@ onMounted(() => {
     <code>npm run lock</code>。
   </p>
 
-  <form v-else-if="!unlocked" class="unlock" @submit.prevent="unlock(password)">
+  <!-- 有加密内容且未解锁时才出现密码框 -->
+  <form v-if="secretCount && !unlocked" class="unlock" @submit.prevent="unlock(password)">
     <input
       v-model="password"
       type="password"
       class="pw-input"
-      placeholder="输入密码"
+      placeholder="输入密码，解锁加密文章"
       autocomplete="current-password"
     />
     <button class="btn" type="submit" :disabled="busy">
@@ -109,17 +129,17 @@ onMounted(() => {
 
   <p v-if="error" class="error">{{ error }}</p>
 
-  <template v-if="unlocked">
+  <template v-if="displayItems.length">
     <div class="vault-bar">
-      <span>{{ items.length }} 篇</span>
-      <button class="btn ghost" type="button" @click="lock">锁定</button>
+      <span>{{ displayItems.length }} 篇<template v-if="secretCount && !unlocked">（免密）</template></span>
+      <button v-if="secretCount && unlocked" class="btn ghost" type="button" @click="lock">锁定</button>
     </div>
 
     <div class="vault-layout">
       <!-- 左：文章列表 -->
       <nav class="vault-list">
         <button
-          v-for="(item, i) in items"
+          v-for="(item, i) in displayItems"
           :key="i"
           class="vault-head"
           :class="{ active: openIndex === i }"
@@ -132,18 +152,21 @@ onMounted(() => {
       </nav>
 
       <!-- 右：当前文章完整正文，横排正常换行 -->
-      <div v-if="items[openIndex]" class="vault-reader">
+      <div v-if="displayItems[openIndex]" class="vault-reader">
         <div class="reader-head">
-          <span class="reader-title">{{ items[openIndex].title }}</span>
+          <span class="reader-title">{{ displayItems[openIndex].title }}</span>
           <span class="reader-meta">
-            <span class="vault-date">{{ simplifyDate(items[openIndex].date) }}</span>
-            <span v-for="t in items[openIndex].tags" :key="t" class="tag">#{{ t }}</span>
+            <span class="vault-date">{{ simplifyDate(displayItems[openIndex].date) }}</span>
+            <span v-for="t in displayItems[openIndex].tags" :key="t" class="tag">#{{ t }}</span>
           </span>
         </div>
-        <div class="vault-body post-content" v-html="items[openIndex].html"></div>
+        <div class="vault-body post-content" v-html="displayItems[openIndex].html"></div>
       </div>
     </div>
   </template>
+  <p v-else-if="secretCount && !unlocked" class="hint-empty">
+    还有 {{ secretCount }} 篇加密文章，输入上方密码后出现。
+  </p>
 </template>
 
 <style scoped>
@@ -202,6 +225,10 @@ onMounted(() => {
   color: #c0392b;
   font-size: 0.875rem;
   margin: 0 0 1rem;
+}
+.hint-empty {
+  color: var(--muted);
+  font-size: 0.875rem;
 }
 .vault-bar {
   display: flex;

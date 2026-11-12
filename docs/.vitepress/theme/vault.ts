@@ -19,6 +19,23 @@ export interface VaultEntry {
   iter: number
 }
 
+/**
+ * 免密条目：发布时不填保险箱密码的私密文章。
+ * 只受花锁门禁保护，进入密文页无需再输密码。
+ */
+export interface PlainVaultEntry {
+  id: string
+  date: string
+  plain: true
+  payload: VaultPayload
+}
+
+export type AnyVaultEntry = VaultEntry | PlainVaultEntry
+
+export function isPlainEntry(e: AnyVaultEntry): e is PlainVaultEntry {
+  return 'plain' in e && e.plain === true
+}
+
 export interface VaultPayload {
   title: string
   tags: string[]

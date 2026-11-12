@@ -25,6 +25,10 @@ async function decrypt(entry, pw = password) {
 }
 
 for (const e of entries) {
+  if (e.plain) {
+    console.log(`免密条目：${e.payload.title} / 正文 ${e.payload.body.trim().length} 字（无需解密）`)
+    continue
+  }
   const p = await decrypt(e)
   console.log(`解密成功：${p.title} / 标签 ${p.tags.join(',')} / 正文 ${p.body.trim().length} 字`)
 }

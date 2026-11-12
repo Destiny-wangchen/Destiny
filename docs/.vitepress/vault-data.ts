@@ -1,7 +1,7 @@
 // 由 scripts/gen-vault.mjs 生成（npm run build 时自动执行），请勿手改。
-import type { VaultEntry } from './theme/vault'
+import type { AnyVaultEntry } from './theme/vault'
 
-const entries: VaultEntry[] = [
+const entries: AnyVaultEntry[] = [
   {
     "id": "note-20261002",
     "date": "2026-10-02",

@@ -57,12 +57,13 @@ const byId = new Map()
 // 上一次产物里的条目：明文没变的直接复用旧密文，避免每次构建都产生无意义 diff
 const previous = readExistingEntries(outFile)
 
-// 来源 1：浏览器上传的密文（公开仓库中仅存密文）
+// 来源 1：浏览器上传的条目（加密的只有密文；免密条目明文但受花锁门禁保护）
 if (existsSync(vaultDir)) {
   for (const f of readdirSync(vaultDir).filter((f) => f.endsWith('.json'))) {
     try {
       const e = JSON.parse(readFileSync(join(vaultDir, f), 'utf8'))
       if (e && e.salt && e.iv && e.ct) byId.set(e.id ?? f.replace(/\.json$/, ''), e)
+      else if (e && e.plain && e.payload) byId.set(e.id ?? f.replace(/\.json$/, ''), e)
     } catch (err) {
       console.warn(`  ! 跳过无效文件 ${f}: ${err.message}`)
     }
@@ -93,7 +94,7 @@ if (existsSync(srcDir) && existsSync(pwFile)) {
 }
 
 const entries = [...byId.values()]
-const header = `// 由 scripts/gen-vault.mjs 生成（npm run build 时自动执行），请勿手改。\nimport type { VaultEntry } from './theme/vault'\n\nconst entries: VaultEntry[] = `
+const header = `// 由 scripts/gen-vault.mjs 生成（npm run build 时自动执行），请勿手改。\nimport type { AnyVaultEntry } from './theme/vault'\n\nconst entries: AnyVaultEntry[] = `
 const content = `${header}${JSON.stringify(entries, null, 2)}\n\nexport default entries\n`
 // 内容一字未改就不落盘：省掉一次无意义的写入，也避免 dev server 被自己触发的改动重载。
 // 比较前统一换行符——Windows 上 checkout 出来可能是 CRLF，按字节比会误判成「变了」。

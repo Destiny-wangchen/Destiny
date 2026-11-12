@@ -228,20 +228,22 @@ async function publish() {
     pubErr.value = '请先填写 GitHub Token（只需要填一次，会保存在这台设备上）'
     return
   }
-  if (isPrivate.value && !vaultPw.value) {
-    pubErr.value = '隐藏文章需要填写保险箱密码，访客将用它来解锁'
-    return
-  }
-
   publishing.value = true
   try {
     if (isPrivate.value) {
-      // 正文在浏览器本地加密，仓库与服务器只会拿到密文
       const payload = { title: title.value.trim(), tags: tagList.value, body: '\n' + body.value.trim() + '\n' }
-      const enc = await encryptForVault(payload, vaultPw.value)
-      const entry = { id: fileId.value, date: date.value || today(), ...enc }
-      await ghPut(`private-vault/${fileId.value}.json`, JSON.stringify(entry, null, 2), `publish(加密): ${title.value.trim()}`)
-      pubMsg.value = `加密发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在「私密」页，输入保险箱密码即可查看。`
+      if (vaultPw.value) {
+        // 有密码：正文在浏览器本地加密，仓库与服务器只会拿到密文
+        const enc = await encryptForVault(payload, vaultPw.value)
+        const entry = { id: fileId.value, date: date.value || today(), ...enc }
+        await ghPut(`private-vault/${fileId.value}.json`, JSON.stringify(entry, null, 2), `publish(加密): ${title.value.trim()}`)
+        pubMsg.value = `加密发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在「密文」页，输入保险箱密码即可查看。`
+      } else {
+        // 不填密码：免密发布，进「密文」页即可阅读（仍受花锁门禁保护）
+        const entry = { id: fileId.value, date: date.value || today(), plain: true, payload }
+        await ghPut(`private-vault/${fileId.value}.json`, JSON.stringify(entry, null, 2), `publish(密文·免密): ${title.value.trim()}`)
+        pubMsg.value = `发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在「密文」页，无需密码即可阅读。`
+      }
     } else {
       await ghPut(`docs/posts/${fileName.value}`, markdown.value, `publish: ${title.value.trim()}`)
       pubMsg.value = `发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在首页和归档。`
@@ -546,22 +548,22 @@ async function confirmDel() {
   <div class="field">
     <label class="check">
       <input v-model="isPrivate" type="checkbox" />
-      <span>隐藏文章（不进入公开列表，访客需密码才能查看）</span>
+      <span>隐藏文章（不进入公开列表，只出现在「密文」页）</span>
     </label>
     <p v-if="isPrivate" class="hint">
-      勾选后正文会在你的浏览器里用下面的保险箱密码加密，然后再上传——仓库里只有密文，
-      拿到密码的人在「<a class="inline-link" href="/Destiny/vault.html">私密</a>」页输入同一密码即可阅读。
-      想让谁看，就把密码给谁。
+      填了下面的保险箱密码：正文在浏览器里加密后才上传——仓库里只有密文，
+      拿到密码的人在「<a class="inline-link" href="/Destiny/vault.html">密文</a>」页输入同一密码即可阅读。
+      <strong>密码留空：免密发布</strong>，进入「密文」页即可直接阅读（无需再输密码）。
     </p>
   </div>
 
   <div v-if="isPrivate" class="field">
-    <label>保险箱密码（加密用，发布后把同一密码告诉可查看的人）</label>
+    <label>保险箱密码（可选——填了加密，留空免密直读）</label>
     <input
       v-model="vaultPw"
       type="password"
       class="input"
-      placeholder="与「私密」页解锁密码一致"
+      placeholder="留空 = 免密发布；填写 = 加密发布"
       autocomplete="off"
     />
   </div>
@@ -646,9 +648,9 @@ async function confirmDel() {
       <strong>公开文章</strong>：点「一键发布」，自动进入首页、归档，对所有人可见。
     </p>
     <p>
-      <strong>隐藏文章</strong>：勾选「隐藏文章」并填写保险箱密码后点「一键发布」。
-      内容加密后才离开你的浏览器，不进入公开列表；拿到密码的人在「
-      <a class="inline-link" href="/Destiny/vault.html">私密</a>」页输入同一密码即可查看。
+      <strong>隐藏文章</strong>：勾选「隐藏文章」后点「一键发布」，文章只出现在「
+      <a class="inline-link" href="/Destiny/vault.html">密文</a>」页。密码可选——
+      留空则免密发布，进页即可阅读；填了密码则内容加密后才离开浏览器，拿到密码的人输入同一密码才能查看。
     </p>
   </div>
   </template>
