@@ -10,3 +10,13 @@ export function formatDate(d: unknown): string {
   }
   return String(d ?? '')
 }
+
+/**
+ * 显示用简化格式：今年的日期省略年份（11-09），往年的保留完整（2025-09-12）。
+ * 入参须为 YYYY-MM-DD 格式。
+ */
+export function simplifyDate(d: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return d
+  const y = d.slice(0, 4)
+  return y === String(new Date().getFullYear()) ? d.slice(5) : d
+}

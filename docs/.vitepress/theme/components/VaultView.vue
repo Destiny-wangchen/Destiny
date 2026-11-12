@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { marked } from 'marked'
 import entries from '../../vault-data'
 import { decryptEntry, type VaultEntry, type VaultPayload } from '../vault'
+import { simplifyDate } from '../formatDate'
 
 interface Item extends VaultPayload {
   date: string
@@ -117,7 +118,7 @@ onMounted(() => {
     <article v-for="(item, i) in items" :key="i" class="vault-item">
       <button class="vault-head" type="button" @click="toggle(i)">
         <span class="vault-title">{{ item.title }}</span>
-        <span class="vault-date">{{ item.date }}</span>
+        <span class="vault-date">{{ simplifyDate(item.date) }}</span>
       </button>
       <div v-if="openIndex === i" class="vault-body post-content" v-html="item.html"></div>
       <div v-if="openIndex === i && item.tags.length" class="vault-tags">

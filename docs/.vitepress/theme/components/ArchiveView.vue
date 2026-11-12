@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { withBase } from 'vitepress'
 import { data as posts } from '../../posts.data'
 import type { PostMeta } from '../../posts.data'
+import { simplifyDate } from '../formatDate'
 
 const activeTag = ref('')
 
@@ -49,7 +50,7 @@ function toggleTag(tag: string) {
     <h2 class="year">{{ year }}</h2>
     <ul class="archive-list">
       <li v-for="p in items" :key="p.url" class="archive-item">
-        <span class="date">{{ p.date }}</span>
+        <span class="date">{{ simplifyDate(p.date) }}</span>
         <a class="title" :href="withBase(p.url)">{{ p.title }}</a>
         <span v-for="t in p.tags" :key="t" class="tag">#{{ t }}</span>
       </li>

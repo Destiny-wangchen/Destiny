@@ -1,6 +1,7 @@
 ﻿<script setup lang="ts">
 import { withBase, useData } from 'vitepress'
 import { data as posts } from '../../posts.data'
+import { simplifyDate } from '../formatDate'
 
 const { frontmatter } = useData()
 </script>
@@ -16,7 +17,7 @@ const { frontmatter } = useData()
       <a class="post-title" :href="withBase(p.url)">{{ p.title }}</a>
       <div class="post-meta">
         <span v-if="p.pinned" class="pin">置顶</span>
-        <span class="post-date">{{ p.date }}</span>
+        <span class="post-date">{{ simplifyDate(p.date) }}</span>
         <span v-for="t in p.tags" :key="t" class="tag">#{{ t }}</span>
       </div>
     </li>
