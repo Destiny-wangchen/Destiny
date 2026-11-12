@@ -88,6 +88,21 @@ function toggle(i: number) {
   openIndex.value = i
 }
 
+// 解锁后出现在左缘的引路话（横排，按原分行）
+const introLines = [
+  '如果你能看到这句话',
+  '那么',
+  '要么你对我足够了解',
+  '要么我对你足够信任',
+  '虽说也不是什么重要的文字',
+  '但我还是希望',
+  '有些浪漫和真挚的话可以留给你',
+  '那',
+  '去寻找我的密码吧',
+  '去看看',
+  '我想说却没有说出来的话'
+]
+
 const noCrypto = ref(false)
 
 onMounted(() => {
@@ -103,6 +118,11 @@ onMounted(() => {
 <template>
   <h1 class="page-title">密文</h1>
   <p class="page-desc">只有拿得到密码的人才打得开。内容在本地解密，服务端只存密文。</p>
+
+  <!-- 解锁后：左缘引路话（与首页诗句石刻同位置，横排分行） -->
+  <aside v-if="unlocked" class="vault-intro">
+    <p v-for="(l, i) in introLines" :key="i">{{ l }}</p>
+  </aside>
 
   <p v-if="!entries.length" class="empty">
     还没有私密文章。把 <code>.md</code> 放进 <code>private-src/</code>，然后运行
@@ -177,6 +197,37 @@ onMounted(() => {
 .page-desc {
   color: var(--muted);
   margin: 0 0 2rem;
+}
+/* —— 解锁后左缘引路话：贴屏幕左缘，横排分行 —— */
+.vault-intro {
+  display: none;
+}
+@media (min-width: 1200px) {
+  .vault-intro {
+    display: block;
+    position: fixed;
+    left: clamp(1.25rem, 3.5vw, 3rem);
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: 11rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    line-height: 2;
+    letter-spacing: 0.06em;
+    opacity: 0;
+    animation: intro-in 1.2s ease 0.2s forwards;
+    pointer-events: none;
+    user-select: none;
+    z-index: 5;
+  }
+  .vault-intro p {
+    margin: 0;
+  }
+}
+@keyframes intro-in {
+  to {
+    opacity: 0.75;
+  }
 }
 .empty {
   color: var(--muted);
