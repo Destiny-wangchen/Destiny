@@ -66,7 +66,7 @@ function lock() {
 }
 
 function toggle(i: number) {
-  openIndex.value = openIndex.value === i ? -1 : i
+  openIndex.value = i
 }
 
 const noCrypto = ref(false)
@@ -115,16 +115,34 @@ onMounted(() => {
       <button class="btn ghost" type="button" @click="lock">锁定</button>
     </div>
 
-    <article v-for="(item, i) in items" :key="i" class="vault-item">
-      <button class="vault-head" type="button" @click="toggle(i)">
-        <span class="vault-title">{{ item.title }}</span>
-        <span class="vault-date">{{ simplifyDate(item.date) }}</span>
-      </button>
-      <div v-if="openIndex === i" class="vault-body post-content" v-html="item.html"></div>
-      <div v-if="openIndex === i && item.tags.length" class="vault-tags">
-        <span v-for="t in item.tags" :key="t" class="tag">#{{ t }}</span>
+    <div class="vault-layout">
+      <!-- 左：文章列表 -->
+      <nav class="vault-list">
+        <button
+          v-for="(item, i) in items"
+          :key="i"
+          class="vault-head"
+          :class="{ active: openIndex === i }"
+          type="button"
+          @click="toggle(i)"
+        >
+          <span class="vault-title">{{ item.title }}</span>
+          <span class="vault-date">{{ simplifyDate(item.date) }}</span>
+        </button>
+      </nav>
+
+      <!-- 右：当前文章完整正文，横排正常换行 -->
+      <div v-if="items[openIndex]" class="vault-reader">
+        <div class="reader-head">
+          <span class="reader-title">{{ items[openIndex].title }}</span>
+          <span class="reader-meta">
+            <span class="vault-date">{{ simplifyDate(items[openIndex].date) }}</span>
+            <span v-for="t in items[openIndex].tags" :key="t" class="tag">#{{ t }}</span>
+          </span>
+        </div>
+        <div class="vault-body post-content" v-html="items[openIndex].html"></div>
       </div>
-    </article>
+    </div>
   </template>
 </template>
 
@@ -195,41 +213,79 @@ onMounted(() => {
   padding-bottom: 0.6rem;
   margin-bottom: 0.5rem;
 }
-.vault-item {
-  border-bottom: 1px solid var(--border);
+/* —— 左列表 + 右正文 —— */
+.vault-layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .vault-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+.vault-list {
+  display: grid;
+  border-top: 1px solid var(--border);
 }
 .vault-head {
   width: 100%;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.9rem 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.8rem 0.6rem;
   border: none;
+  border-bottom: 1px solid var(--border);
   background: none;
-  color: var(--fg);
-  font-size: 1rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
   text-align: left;
   cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+.vault-head:hover {
+  color: var(--fg);
+}
+.vault-head.active {
+  color: var(--fg);
+  background: var(--code-bg);
 }
 .vault-title {
   font-weight: 500;
 }
-.vault-head:hover .vault-title {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+.vault-head.active .vault-title {
+  font-weight: 600;
 }
 .vault-date {
   color: var(--muted);
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
 }
-.vault-body {
-  padding: 0.5rem 0 1.5rem;
-}
-.vault-tags {
+.reader-head {
   display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.8rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.reader-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+.reader-meta {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
-  padding-bottom: 1.5rem;
+}
+.vault-body {
+  /* 横排正文：默认换行行为，长词/网址也能正常折行 */
+  padding: 0;
+  overflow-wrap: break-word;
+  line-height: 1.9;
 }
 </style>
