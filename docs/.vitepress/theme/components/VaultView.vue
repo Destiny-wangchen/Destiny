@@ -137,7 +137,6 @@ onMounted(() => {
 
 <template>
   <h1 class="page-title">密文</h1>
-  <p class="page-desc">只有拿得到密码的人才打得开。内容在本地解密，服务端只存密文。</p>
 
   <!-- 解锁后（密码或彩蛋任一）：左缘引路话（与首页诗句石刻同位置，横排分行） -->
   <aside v-if="unlocked || eggOpen" class="vault-intro">
@@ -237,7 +236,8 @@ onMounted(() => {
     left: clamp(1.25rem, 3.5vw, 3rem);
     top: 50%;
     transform: translateY(-50%);
-    max-width: 11rem;
+    /* 13 字长句 + 字距可整行放下，按原有分句一行一句 */
+    max-width: 13.5rem;
     color: var(--muted);
     font-size: 0.75rem;
     line-height: 2;

@@ -1,7 +1,7 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { marked } from 'marked'
-import { EGG_KEY } from '../vault'
+import { decryptEntry, EGG_KEY } from '../vault'
 
 const title = ref('')
 const date = ref('')
@@ -164,6 +164,8 @@ function reset() {
   isPinned.value = false
   slug.value = ''
   slugTouched.value = false
+  editPostPath.value = ''
+  editVaultName.value = ''
   localStorage.removeItem(DRAFT_KEY)
 }
 // —— 一键发布实现 ——
@@ -238,30 +240,44 @@ async function publish() {
 
   publishing.value = true
   try {
+    // 编辑已有文件时覆盖原路径，而不是新建
+    const editingVault = editVaultName.value
+    const vaultPath = editingVault || `private-vault/${fileId.value}.json`
+    const vaultId = editingVault ? editingVault.replace(/\.json$/, '') : fileId.value
     if (isPrivate.value) {
       const payload = { title: title.value.trim(), tags: tagList.value, body: '\n' + body.value.trim() + '\n' }
       if (unlockMode.value === 'egg') {
         // 彩蛋：固定派生密钥轻度混淆，访客在首页诗句署名点中「博尔赫斯」后出现在密文页
         const enc = await encryptForVault(payload, EGG_KEY)
-        const entry = { id: fileId.value, date: date.value || today(), egg: true, ...enc }
-        await ghPut(`private-vault/${fileId.value}.json`, JSON.stringify(entry, null, 2), `publish(彩蛋): ${title.value.trim()}`)
-        pubMsg.value = `彩蛋发布成功！「${title.value.trim()}」将藏入密文页——访客在首页诗句署名点中「博尔赫斯」后现身。`
+        const entry = { id: vaultId, date: date.value || today(), egg: true, ...enc }
+        await ghPut(vaultPath, JSON.stringify(entry, null, 2), `publish(彩蛋): ${title.value.trim()}`)
+        pubMsg.value = editingVault
+          ? `已更新「${title.value.trim()}」，1-2 分钟后密文页生效。`
+          : `彩蛋发布成功！「${title.value.trim()}」将藏入密文页——访客在首页诗句署名点中「博尔赫斯」后现身。`
       } else if (unlockMode.value === 'pw') {
         // 保险箱密码：正文在浏览器本地加密，仓库与服务器只会拿到密文
         const enc = await encryptForVault(payload, vaultPw.value)
-        const entry = { id: fileId.value, date: date.value || today(), ...enc }
-        await ghPut(`private-vault/${fileId.value}.json`, JSON.stringify(entry, null, 2), `publish(加密): ${title.value.trim()}`)
+        const entry = { id: vaultId, date: date.value || today(), ...enc }
+        await ghPut(vaultPath, JSON.stringify(entry, null, 2), `publish(加密): ${title.value.trim()}`)
         pubMsg.value = `加密发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在「密文」页，输入保险箱密码即可查看。`
       } else {
         // 无需密码：进「密文」页即可阅读（仍受花锁门禁保护）
-        const entry = { id: fileId.value, date: date.value || today(), plain: true, payload }
-        await ghPut(`private-vault/${fileId.value}.json`, JSON.stringify(entry, null, 2), `publish(密文·免密): ${title.value.trim()}`)
-        pubMsg.value = `发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在「密文」页，无需密码即可阅读。`
+        const entry = { id: vaultId, date: date.value || today(), plain: true, payload }
+        await ghPut(vaultPath, JSON.stringify(entry, null, 2), `publish(密文·免密): ${title.value.trim()}`)
+        pubMsg.value = editingVault
+          ? `已更新「${title.value.trim()}」，1-2 分钟后密文页生效。`
+          : `发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在「密文」页，无需密码即可阅读。`
       }
     } else {
-      await ghPut(`docs/posts/${fileName.value}`, markdown.value, `publish: ${title.value.trim()}`)
-      pubMsg.value = `发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在首页和归档。`
+      const postPath = editPostPath.value || `docs/posts/${fileName.value}`
+      await ghPut(postPath, markdown.value, `${editPostPath.value ? 'edit' : 'publish'}: ${title.value.trim()}`)
+      pubMsg.value = editPostPath.value
+        ? `已更新「${title.value.trim()}」，1-2 分钟后首页和归档生效。`
+        : `发布成功！「${title.value.trim()}」将在 1-2 分钟后出现在首页和归档。`
     }
+    editPostPath.value = ''
+    editVaultName.value = ''
+    if (manageOpen.value) await loadManage()
     pubOk.value = true
   } catch (e) {
     pubErr.value = e instanceof Error ? e.message : String(e)
@@ -269,6 +285,188 @@ async function publish() {
     if (/401|403|Bad credentials|Token/.test(pubErr.value)) showTokenField.value = true
   } finally {
     publishing.value = false
+  }
+}
+
+// —— 文章管理：编辑 / 删除已有文章 ——
+
+interface ManagedPost {
+  name: string
+  path: string
+  sha: string
+}
+interface ManagedVault {
+  name: string
+  path: string
+  sha: string
+  title: string
+  kind: 'plain' | 'pw' | 'egg'
+}
+
+const manageOpen = ref(false)
+const manageLoading = ref(false)
+const manageMsg = ref('')
+const manageErr = ref('')
+const managePosts = ref<ManagedPost[]>([])
+const manageVault = ref<ManagedVault[]>([])
+
+// 正在编辑的已有文件：保存时覆盖原文件，而不是新建
+const editPostPath = ref('')
+const editVaultName = ref('')
+
+async function toggleManage() {
+  manageOpen.value = !manageOpen.value
+  if (manageOpen.value) await loadManage()
+}
+
+async function loadManage() {
+  manageMsg.value = ''
+  manageErr.value = ''
+  manageLoading.value = true
+  try {
+    const postsRes = await fetch(`https://api.github.com/repos/${REPO}/contents/docs/posts?ref=main`)
+    if (!postsRes.ok) throw new Error(`读取公开文章失败（GitHub ${postsRes.status}）`)
+    managePosts.value = ((await postsRes.json()) as any[])
+      .filter((f) => f.type === 'file' && f.name.endsWith('.md'))
+      .map((f) => ({ name: f.name, path: f.path, sha: f.sha }))
+
+    const vaultRes = await fetch(`https://api.github.com/repos/${REPO}/contents/private-vault?ref=main`)
+    if (!vaultRes.ok) throw new Error(`读取密文文章失败（GitHub ${vaultRes.status}）`)
+    const list: ManagedVault[] = []
+    for (const f of (await vaultRes.json()) as any[]) {
+      if (f.type !== 'file' || !f.name.endsWith('.json')) continue
+      try {
+        const raw = f.content ? decodeB64(f.content) : await fetchRaw(f.path)
+        const entry = JSON.parse(raw)
+        list.push({
+          name: f.name,
+          path: f.path,
+          sha: f.sha,
+          title: entry.payload?.title ?? entry.id ?? f.name,
+          kind: entry.plain ? 'plain' : entry.egg ? 'egg' : 'pw'
+        })
+      } catch {
+        list.push({ name: f.name, path: f.path, sha: f.sha, title: f.name, kind: 'pw' })
+      }
+    }
+    manageVault.value = list
+  } catch (e) {
+    manageErr.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    manageLoading.value = false
+  }
+}
+
+async function fetchRaw(path: string) {
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${encodeURI(path)}?ref=main`)
+  if (!res.ok) throw new Error(`读取 ${path} 失败（GitHub ${res.status}）`)
+  const j = await res.json()
+  return decodeB64(j.content)
+}
+
+/** 极简 frontmatter 解析，仅覆盖一键发布生成的格式 */
+function parsePost(md: string) {
+  const m = md.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/)
+  if (!m) return { title: '', date: today(), tags: '', body: md.trim(), pinned: false }
+  const fm = m[1]
+  const grab = (k: string) => (fm.match(new RegExp(`^${k}:\\s*(.+)$`, 'm')) ?? [])[1]?.trim() ?? ''
+  const tagsM = fm.match(/tags:\s*\r?\n((?:\s*-.+\s*\r?\n?)+)/)
+  const tags = tagsM
+    ? tagsM[1].split(/\r?\n/).map((l) => l.replace(/^\s*-\s*/, '').trim()).filter(Boolean).join(', ')
+    : ''
+  return { title: grab('title'), date: grab('date'), tags, body: m[2].trim(), pinned: /^\s*pinned:\s*true\b/m.test(fm) }
+}
+
+async function editPost(f: ManagedPost) {
+  manageErr.value = ''
+  try {
+    const p = parsePost(await fetchRaw(f.path))
+    title.value = p.title
+    date.value = p.date || today()
+    tags.value = p.tags
+    body.value = p.body
+    isPinned.value = p.pinned
+    isPrivate.value = false
+    slug.value = f.name.replace(/\.md$/, '')
+    slugTouched.value = true
+    editPostPath.value = f.path
+    editVaultName.value = ''
+    manageMsg.value = `「${f.name}」已载入编辑器——改完点「一键发布」即覆盖原文。`
+  } catch (e) {
+    manageErr.value = e instanceof Error ? e.message : String(e)
+  }
+}
+
+async function editVault(f: ManagedVault) {
+  manageErr.value = ''
+  try {
+    const entry = JSON.parse(await fetchRaw(f.path))
+    if (!entry.plain && !entry.egg) {
+      manageErr.value = '「保险箱密码」加密的文章无法在此编辑（密钥不在本机），可删除后重新发布'
+      return
+    }
+    const payload = entry.plain ? entry.payload : await decryptEntry(entry, EGG_KEY)
+    title.value = payload.title
+    date.value = entry.date || today()
+    tags.value = (payload.tags ?? []).join(', ')
+    body.value = payload.body.trim()
+    isPrivate.value = true
+    unlockMode.value = entry.egg ? 'egg' : 'open'
+    slug.value = f.name.replace(/\.json$/, '')
+    slugTouched.value = true
+    editVaultName.value = f.name
+    editPostPath.value = ''
+    manageMsg.value = `「${payload.title}」已载入编辑器（密文·${entry.egg ? '彩蛋' : '免密'}）——改完点「一键发布」即覆盖原文。`
+  } catch (e) {
+    manageErr.value = e instanceof Error ? e.message : String(e)
+  }
+}
+
+async function ghDelete(path: string, sha: string, message: string) {
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${encodeURI(path)}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token.value.trim()}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ message, sha, branch: 'main' })
+  })
+  if (!res.ok) {
+    const j = await res.json().catch(() => ({}) as { message?: string })
+    throw new Error(`删除失败 GitHub ${res.status}: ${j.message ?? '未知错误'}`)
+  }
+}
+
+async function removePost(f: ManagedPost) {
+  if (!confirm(`确定删除公开文章「${f.name}」？文件将从仓库移除，1-2 分钟后从网站消失。`)) return
+  manageErr.value = ''
+  manageLoading.value = true
+  try {
+    await ghDelete(f.path, f.sha, `delete: ${f.name}`)
+    manageMsg.value = `「${f.name}」已删除。`
+    if (editPostPath.value === f.path) { editPostPath.value = ''; reset() }
+    await loadManage()
+  } catch (e) {
+    manageErr.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    manageLoading.value = false
+  }
+}
+
+async function removeVault(f: ManagedVault) {
+  if (!confirm(`确定删除密文文章「${f.title}」（${f.name}）？文件将从仓库移除。`)) return
+  manageErr.value = ''
+  manageLoading.value = true
+  try {
+    await ghDelete(f.path, f.sha, `delete(密文): ${f.name}`)
+    manageMsg.value = `「${f.title}」已删除。`
+    if (editVaultName.value === f.name) { editVaultName.value = ''; reset() }
+    await loadManage()
+  } catch (e) {
+    manageErr.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    manageLoading.value = false
   }
 }
 
@@ -672,6 +870,43 @@ async function confirmDel() {
     </p>
     <p v-else-if="pubMsg" class="pub-ok">{{ pubMsg }}</p>
     <p v-if="pubErr" class="pub-err">{{ pubErr }}</p>
+
+    <!-- 文章管理：编辑 / 删除已有文章 -->
+    <div class="manage">
+      <button class="text-btn" type="button" @click="toggleManage">
+        {{ manageOpen ? '收起文章管理 ▲' : '文章管理（编辑 / 删除）▼' }}
+      </button>
+      <div v-if="manageOpen" class="manage-panel">
+        <p v-if="manageLoading" class="hint">读取中…</p>
+        <p v-if="manageMsg" class="hint">{{ manageMsg }}</p>
+        <p v-if="manageErr" class="pub-err">{{ manageErr }}</p>
+
+        <template v-if="!manageLoading">
+          <p class="manage-head">公开文章（{{ managePosts.length }}）</p>
+          <p v-if="!managePosts.length" class="hint">还没有公开文章。</p>
+          <div v-for="f in managePosts" :key="f.path" class="manage-row">
+            <span class="manage-name">{{ f.name }}</span>
+            <span class="manage-actions">
+              <button class="text-btn" type="button" @click="editPost(f)">编辑</button>
+              <button class="text-btn danger" type="button" @click="removePost(f)">删除</button>
+            </span>
+          </div>
+
+          <p class="manage-head">密文文章（{{ manageVault.length }}）</p>
+          <p v-if="!manageVault.length" class="hint">还没有密文文章。</p>
+          <div v-for="f in manageVault" :key="f.path" class="manage-row">
+            <span class="manage-name">
+              {{ f.title }}
+              <em class="manage-kind">{{ f.kind === 'plain' ? '免密' : f.kind === 'egg' ? '彩蛋' : '密码' }}</em>
+            </span>
+            <span class="manage-actions">
+              <button v-if="f.kind !== 'pw'" class="text-btn" type="button" @click="editVault(f)">编辑</button>
+              <button class="text-btn danger" type="button" @click="removeVault(f)">删除</button>
+            </span>
+          </div>
+        </template>
+      </div>
+    </div>
   </div>
 
   <div class="howto">
@@ -963,6 +1198,52 @@ async function confirmDel() {
   margin: 0.9rem 0 0;
   color: #c0392b;
   font-size: 0.875rem;
+}
+.manage {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.manage-panel {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.35rem;
+}
+.manage-head {
+  margin: 0.75rem 0 0.1rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
+}
+.manage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+.manage-name {
+  overflow-wrap: break-word;
+}
+.manage-kind {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 0.6875rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  margin-left: 0.35rem;
+}
+.manage-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.text-btn.danger {
+  color: #c0392b;
 }
 .howto {
   margin-top: 1.75rem;

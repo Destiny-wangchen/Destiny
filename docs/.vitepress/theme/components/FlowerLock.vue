@@ -32,7 +32,7 @@ function onClick(n: number) {
       :aria-label="`花 ${n}`"
       @click="onClick(n)"
     >
-      <svg viewBox="0 0 32 32" width="18" height="18" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true">
         <circle class="petal" cx="16" cy="9" r="5" />
         <circle class="petal" cx="16" cy="23" r="5" />
         <circle class="petal" cx="9" cy="16" r="5" />
@@ -51,7 +51,7 @@ function onClick(n: number) {
 .flower-lock {
   display: inline-flex;
   align-items: center;
-  gap: 1px;
+  gap: 7px;
   margin-top: 0.35rem;
 }
 .flower {
@@ -59,8 +59,8 @@ function onClick(n: number) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   border: none;
   background: none;
@@ -88,7 +88,7 @@ function onClick(n: number) {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 7px;
+  font-size: 10px;
   line-height: 1;
   color: var(--muted);
   pointer-events: none;
