@@ -26,6 +26,7 @@ watch(
       <p class="footer-line">
         © {{ year }} Destiny · Powered by
         <a href="https://vitepress.dev" target="_blank" rel="noopener">VitePress</a>
+        · <a :href="withBase('feed.xml')" target="_blank" rel="noopener">RSS 订阅</a>
       </p>
       <p class="footer-line stats">
         本站总访问量 <span id="busuanzi_value_site_pv">…</span> 次 · 访客数

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useData, withBase } from 'vitepress'
 import ThemeToggle from './ThemeToggle.vue'
+import SearchBox from './SearchBox.vue'
 import FlowerLock from './FlowerLock.vue'
 import { useGardenSecret } from '../useGardenSecret'
 
@@ -45,6 +46,7 @@ const nav = computed(() =>
             <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
           </svg>
         </a>
+        <SearchBox />
         <a
           class="icon-link"
           href="https://github.com/Destiny-wangchen"

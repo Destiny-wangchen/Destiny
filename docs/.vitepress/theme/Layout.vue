@@ -11,6 +11,7 @@ import QuizApp from './components/QuizApp.vue'
 import VaultView from './components/VaultView.vue'
 import WriteView from './components/WriteView.vue'
 import PageView from './components/PageView.vue'
+import Giscus from './components/Giscus.vue'
 import { formatDate, simplifyDate } from './formatDate'
 import { useGardenSecret } from './useGardenSecret'
 
@@ -61,6 +62,7 @@ function goBack(e: MouseEvent) {
           <Content />
         </div>
         <div class="post-footer-info"><PageView /></div>
+        <Giscus />
       </article>
     </main>
     <Footer />
