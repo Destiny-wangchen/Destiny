@@ -74,6 +74,8 @@ const nav = computed(() =>
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  flex-wrap: wrap;
+  row-gap: 0.4rem;
 }
 .header-left {
   display: flex;
@@ -86,9 +88,12 @@ const nav = computed(() =>
 }
 .nav {
   display: flex;
-  gap: 1rem;
+  gap: 1.25rem;
   color: var(--muted);
   font-size: 0.9375rem;
+}
+.nav a {
+  white-space: nowrap;
 }
 .nav a:hover {
   color: var(--fg);
