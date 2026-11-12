@@ -7,7 +7,10 @@ const base = process.env.VITEPRESS_BASE || '/'
 const SITE_URL = process.env.SITE_URL || 'https://destiny-wangchen.github.io/Destiny'
 
 // 提取 frontmatter 里的 title/date/tags（简单解析，够用即可）
-function parsePost(raw: string) {
+function parsePost(rawInput: string) {
+  // 去掉 UTF-8 BOM：编辑器另存为「UTF-8 带 BOM」时文件开头会多出 \uFEFF，
+  // 会让下面的 ^--- 匹配失败，导致标题退回文件名、日期丢失（RSS / 搜索索引因此缺条目）
+  const raw = rawInput.replace(/^\uFEFF/, '')
   const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/)
   const meta: { title?: string; date?: string; tags: string[] } = { tags: [] }
   let body = raw
