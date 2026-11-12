@@ -17,9 +17,9 @@ const baseNav = [
   { text: '应用', link: '/apps.html' }
 ]
 
-// 花锁未解锁时，「私密」入口不渲染，访客不可见
+// 花锁未解锁时，「密文」入口不渲染，访客不可见
 const nav = computed(() =>
-  unlocked.value ? [...baseNav, { text: '私密', link: '/vault.html' }] : baseNav
+  unlocked.value ? [...baseNav, { text: '密文', link: '/vault.html' }] : baseNav
 )
 </script>
 

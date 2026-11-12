@@ -3,6 +3,7 @@ import { withBase, useData } from 'vitepress'
 import { data as posts } from '../../posts.data'
 import { simplifyDate } from '../formatDate'
 import VerseStone from './VerseStone.vue'
+import SecretStone from './SecretStone.vue'
 
 const { frontmatter } = useData()
 </script>
@@ -14,6 +15,7 @@ const { frontmatter } = useData()
   </section>
 
   <VerseStone />
+  <SecretStone />
 
   <ul class="post-list">
     <li v-for="p in posts" :key="p.url" class="post-item">

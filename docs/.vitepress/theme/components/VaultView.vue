@@ -82,7 +82,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1 class="page-title">私密</h1>
+  <h1 class="page-title">密文</h1>
   <p class="page-desc">只有拿得到密码的人才打得开。内容在本地解密，服务端只存密文。</p>
 
   <p v-if="!entries.length" class="empty">

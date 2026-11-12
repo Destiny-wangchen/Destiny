@@ -1,4 +1,4 @@
 ---
 layout: vault
-title: 私密
+title: 密文
 ---
