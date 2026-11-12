@@ -1,14 +1,21 @@
 ﻿/**
- * 把 frontmatter 的日期（可能是 Date 对象或字符串）格式化为 YYYY-MM-DD。
+ * 把 frontmatter 的日期格式化为 YYYY-MM-DD。
+ * 兼容三种来源：Date 对象、YYYY-MM-DD 字符串、
+ * VitePress 序列化产物（ISO 字符串，如 2026-09-12T00:00:00.000Z）。
  */
 export function formatDate(d: unknown): string {
-  if (d instanceof Date) {
-    const y = d.getFullYear()
-    const m = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
+  const s = String(d ?? '')
+  // ISO 字符串直接截取日期部分，避免时区换算带来的偏差
+  const iso = s.match(/^(\d{4}-\d{2}-\d{2})T/)
+  if (iso) return iso[1]
+  const date = d instanceof Date ? d : new Date(s)
+  if (!Number.isNaN(date.getTime())) {
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
     return `${y}-${m}-${day}`
   }
-  return String(d ?? '')
+  return s
 }
 
 /**
