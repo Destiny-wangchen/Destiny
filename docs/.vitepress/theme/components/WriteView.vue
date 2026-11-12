@@ -255,9 +255,255 @@ async function publish() {
     publishing.value = false
   }
 }
+
+// —— 项目管理 ——
+interface ProjItem {
+  name: string
+  desc: string
+  link: string
+  repo: string
+  folder: string
+  tags: string[]
+}
+
+const tab = ref<'post' | 'projects'>('post')
+const projects = ref<ProjItem[]>([])
+const projLoading = ref(false)
+const projMsg = ref('')
+const projErr = ref('')
+const editing = ref<number | null>(null) // -1 表示新增
+const pForm = ref({ name: '', desc: '', link: '', repo: '', folder: '', tags: '' })
+const delIdx = ref<number | null>(null)
+const delFiles = ref(false)
+
+// 极简 YAML 子集解析：只处理 projects.md 的 items 结构
+function yamlVal(v: string) {
+  const s = v.trim()
+  if (s.length > 1 && /^".*"$/.test(s)) return s.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+  return s
+}
+
+function parseProjects(raw: string): ProjItem[] {
+  const items: ProjItem[] = []
+  let cur: ProjItem | null = null
+  let curTags: string[] | null = null
+  let inItems = false
+  for (const line of raw.split(/\r?\n/)) {
+    if (!line.trim()) continue
+    if (/^items:\s*$/.test(line.trim())) {
+      inItems = true
+      continue
+    }
+    if (!inItems) continue
+    const start = line.match(/^\s*-\s*(\w+):\s*(.*)$/)
+    if (start) {
+      cur = { name: yamlVal(start[2]), desc: '', link: '', repo: '', folder: '', tags: [] }
+      items.push(cur)
+      curTags = null
+      continue
+    }
+    const li = line.match(/^\s*-\s+(.*)$/)
+    if (li && curTags && cur) {
+      curTags.push(yamlVal(li[1]))
+      continue
+    }
+    const kv = line.match(/^\s*(\w+):\s*(.*)$/)
+    if (kv && cur) {
+      if (kv[1] === 'tags') {
+        curTags = cur.tags
+      } else if (kv[1] === 'name') cur.name = yamlVal(kv[2])
+      else if (kv[1] === 'desc') cur.desc = yamlVal(kv[2])
+      else if (kv[1] === 'link') cur.link = yamlVal(kv[2])
+      else if (kv[1] === 'repo') cur.repo = yamlVal(kv[2])
+      else if (kv[1] === 'folder') cur.folder = yamlVal(kv[2])
+    }
+  }
+  return items
+}
+
+function q(s: string) {
+  return `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+}
+
+function serializeProjects(items: ProjItem[]) {
+  const out = ['---', 'layout: projects', 'title: 项目', 'items:']
+  for (const p of items) {
+    out.push(`  - name: ${q(p.name)}`)
+    out.push(`    desc: ${q(p.desc)}`)
+    if (p.link) out.push(`    link: ${q(p.link)}`)
+    if (p.repo) out.push(`    repo: ${q(p.repo)}`)
+    if (p.folder) out.push(`    folder: ${q(p.folder)}`)
+    if (p.tags.length) {
+      out.push('    tags:')
+      p.tags.forEach((t) => out.push(`      - ${t}`))
+    }
+  }
+  out.push('---', '')
+  return out.join('\n')
+}
+
+function decodeB64(b64: string) {
+  const bin = atob(b64.replace(/\n/g, ''))
+  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)))
+}
+
+async function loadProjects() {
+  projMsg.value = ''
+  projErr.value = ''
+  projLoading.value = true
+  try {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/docs/projects.md?ref=main`)
+    if (!res.ok) throw new Error(`读取项目列表失败（GitHub ${res.status}）`)
+    const j = await res.json()
+    projects.value = parseProjects(decodeB64(j.content))
+  } catch (e) {
+    projErr.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    projLoading.value = false
+  }
+}
+
+async function persistProjects(list: ProjItem[], message: string) {
+  if (!token.value.trim()) {
+    projErr.value = '保存需要 GitHub Token，请在「写文章」标签底部配置一次'
+    return false
+  }
+  projLoading.value = true
+  try {
+    const headers = {
+      Authorization: `Bearer ${token.value.trim()}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    }
+    const url = `https://api.github.com/repos/${REPO}/contents/docs/projects.md`
+    const get = await fetch(`${url}?ref=main`, { headers })
+    const sha = get.ok ? (await get.json()).sha : undefined
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        message,
+        content: b64encode(serializeProjects(list)),
+        branch: 'main',
+        ...(sha ? { sha } : {})
+      })
+    })
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}) as { message?: string })
+      throw new Error(`保存失败 GitHub ${res.status}: ${j.message ?? '未知错误'}`)
+    }
+    projects.value = list
+    projMsg.value = '已保存！项目页将在 1-2 分钟后自动更新。'
+    return true
+  } catch (e) {
+    projErr.value = e instanceof Error ? e.message : String(e)
+    return false
+  } finally {
+    projLoading.value = false
+  }
+}
+
+function startAdd() {
+  editing.value = -1
+  pForm.value = { name: '', desc: '', link: '', repo: '', folder: '', tags: '' }
+}
+
+function startEdit(i: number) {
+  editing.value = i
+  const p = projects.value[i]
+  pForm.value = { name: p.name, desc: p.desc, link: p.link, repo: p.repo, folder: p.folder, tags: p.tags.join(' ') }
+}
+
+function cancelEdit() {
+  editing.value = null
+}
+
+async function saveProject() {
+  projMsg.value = ''
+  projErr.value = ''
+  const f = pForm.value
+  if (!f.name.trim() || !f.desc.trim()) {
+    projErr.value = '项目名称和简介必须填写'
+    return
+  }
+  const item: ProjItem = {
+    name: f.name.trim(),
+    desc: f.desc.trim(),
+    link: f.link.trim(),
+    repo: f.repo.trim(),
+    folder: f.folder.trim(),
+    tags: f.tags.split(/[,，\s]+/).map((t) => t.trim()).filter(Boolean)
+  }
+  const list = [...projects.value]
+  if (editing.value === -1) list.push(item)
+  else list[editing.value] = item
+  const ok = await persistProjects(list, `projects: ${editing.value === -1 ? '新增' : '更新'} ${item.name}`)
+  if (ok) editing.value = null
+}
+
+async function confirmDel() {
+  if (delIdx.value === null) return
+  const idx = delIdx.value
+  const item = projects.value[idx]
+  projMsg.value = ''
+  projErr.value = ''
+  projLoading.value = true
+  try {
+    if (delFiles.value && item.folder) {
+      const headers = {
+        Authorization: `Bearer ${token.value.trim()}`,
+        Accept: 'application/vnd.github+json'
+      }
+      // 列出文件夹内所有文件，逐个删除
+      const list = await fetch(
+        `https://api.github.com/repos/${REPO}/contents/${encodeURI(item.folder)}?ref=main`,
+        { headers }
+      )
+      if (list.ok) {
+        const files = (await list.json()) as { path: string; type: string; sha: string }[]
+        for (const file of files) {
+          if (file.type !== 'file') continue
+          await fetch(`https://api.github.com/repos/${REPO}/contents/${encodeURI(file.path)}`, {
+            method: 'DELETE',
+            headers: { ...headers, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: `projects: 删除 ${item.name} 的文件 ${file.path}`,
+              sha: file.sha,
+              branch: 'main'
+            })
+          })
+        }
+      }
+    }
+    const list = projects.value.filter((_, i) => i !== idx)
+    const ok = await persistProjects(list, `projects: 删除 ${item.name}`)
+    if (ok) {
+      delIdx.value = null
+      delFiles.value = false
+    }
+  } finally {
+    projLoading.value = false
+  }
+}
 </script>
 <template>
-  <h1 class="page-title">写文章</h1>
+  <h1 class="page-title">创作</h1>
+
+  <div class="tabs">
+    <button class="tab" :class="{ active: tab === 'post' }" type="button" @click="tab = 'post'">
+      写文章
+    </button>
+    <button
+      class="tab"
+      :class="{ active: tab === 'projects' }"
+      type="button"
+      @click="tab = 'projects'"
+    >
+      管项目
+    </button>
+  </div>
+
+  <template v-if="tab === 'post'">
   <p class="page-desc">
     写完点「一键发布」即可自动上线，草稿会自动存在这台设备的浏览器里。
   </p>
@@ -405,6 +651,112 @@ async function publish() {
       <a class="inline-link" href="/Destiny/vault.html">私密</a>」页输入同一密码即可查看。
     </p>
   </div>
+  </template>
+
+  <template v-else>
+    <p class="page-desc">在这里添加、修改、删除项目页的卡片，保存后 1-2 分钟自动上线。</p>
+
+    <div class="field">
+      <button class="btn ghost" type="button" :disabled="projLoading" @click="loadProjects">
+        {{ projLoading ? '读取中…' : projects.length ? '刷新列表' : '从仓库读取项目列表' }}
+      </button>
+      <span v-if="!hasToken" class="hint"> 提示：保存修改需要 GitHub Token（在「写文章」标签底部配置一次） </span>
+    </div>
+
+    <p v-if="projMsg" class="pub-ok">{{ projMsg }}</p>
+    <p v-if="projErr" class="pub-err">{{ projErr }}</p>
+
+    <ul v-if="projects.length" class="proj-list">
+      <li v-for="(p, i) in projects" :key="i" class="proj-item">
+        <div class="proj-row">
+          <div class="proj-info">
+            <div class="proj-head">
+              <span class="proj-name">{{ p.name }}</span>
+              <span v-if="p.link" class="proj-meta">外链</span>
+              <span v-if="p.repo" class="proj-meta">GitHub</span>
+              <span v-if="p.folder" class="proj-meta">关联文件夹</span>
+            </div>
+            <p class="proj-desc">{{ p.desc }}</p>
+            <p v-if="p.tags.length" class="proj-tags">
+              <span v-for="t in p.tags" :key="t">#{{ t }} </span>
+            </p>
+          </div>
+          <div class="proj-ops">
+            <button class="text-btn" type="button" @click="startEdit(i)">编辑</button>
+            <button
+              class="text-btn danger"
+              type="button"
+              @click="delIdx = delIdx === i ? null : i"
+            >
+              删除
+            </button>
+          </div>
+        </div>
+        <div v-if="delIdx === i" class="del-confirm">
+          <label class="check">
+            <input v-model="delFiles" type="checkbox" :disabled="!p.folder" />
+            <span>
+              同时删除关联文件夹（{{ p.folder || '该项目未设置文件夹' }}）
+            </span>
+          </label>
+          <div class="del-actions">
+            <button class="btn ghost danger" type="button" :disabled="projLoading" @click="confirmDel">
+              {{ projLoading ? '删除中…' : '确认删除' }}
+            </button>
+            <button class="text-btn" type="button" @click="delIdx = null">取消</button>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <p v-else-if="!projLoading" class="hint">还没有读取到项目，点上面按钮从仓库加载。</p>
+
+    <div v-if="editing !== null" class="proj-form">
+      <h2 class="form-title">{{ editing === -1 ? '新增项目' : '编辑项目' }}</h2>
+      <div class="field">
+        <label>项目名称 *</label>
+        <input v-model="pForm.name" type="text" class="input" placeholder="我的小工具" />
+      </div>
+      <div class="field">
+        <label>简介 *</label>
+        <input v-model="pForm.desc" type="text" class="input" placeholder="一句话介绍这个项目" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>在线地址（可选）</label>
+          <input v-model="pForm.link" type="text" class="input" placeholder="https://…" />
+        </div>
+        <div class="field">
+          <label>GitHub 仓库（可选）</label>
+          <input v-model="pForm.repo" type="text" class="input" placeholder="https://github.com/…" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>关联文件夹（可选，删除卡片时清理用）</label>
+          <input
+            v-model="pForm.folder"
+            type="text"
+            class="input mono"
+            placeholder="docs/public/apps/demo"
+          />
+        </div>
+        <div class="field">
+          <label>标签（逗号或空格分隔，可选）</label>
+          <input v-model="pForm.tags" type="text" class="input" placeholder="工具 Vue" />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" type="button" :disabled="projLoading" @click="saveProject">
+          {{ projLoading ? '保存中…' : '保存' }}
+        </button>
+        <button class="btn ghost" type="button" @click="cancelEdit">取消</button>
+      </div>
+    </div>
+
+    <div v-else class="field">
+      <button class="btn publish" type="button" @click="startAdd">＋ 新增项目</button>
+    </div>
+  </template>
 </template>
 <style scoped>
 .page-title {
@@ -578,6 +930,111 @@ async function publish() {
 }
 .howto p {
   margin: 0 0 0.5rem;
+}
+/* —— 标签栏 —— */
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.tab:hover {
+  color: var(--fg);
+}
+.tab.active {
+  color: var(--fg);
+  border-bottom-color: var(--fg);
+  font-weight: 500;
+}
+/* —— 项目管理 —— */
+.proj-list {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.proj-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
+}
+.proj-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.proj-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.proj-name {
+  font-weight: 600;
+}
+.proj-meta {
+  font-size: 0.6875rem;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0 0.35rem;
+  line-height: 1.6;
+}
+.proj-desc {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.proj-tags {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.proj-ops {
+  display: flex;
+  gap: 0.9rem;
+  flex-shrink: 0;
+}
+.del-confirm {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  display: grid;
+  gap: 0.6rem;
+}
+.del-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.text-btn.danger:hover {
+  color: #c0392b;
+}
+.btn.ghost.danger:hover:not(:disabled) {
+  color: #c0392b;
+  border-color: #c0392b;
+}
+.proj-form {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.1rem 1.25rem 0.25rem;
+  margin-bottom: 1.5rem;
+}
+.form-title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
 }
 @media (max-width: 560px) {
   .row {

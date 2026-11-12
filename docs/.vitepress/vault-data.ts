@@ -13,9 +13,9 @@ const entries: VaultEntry[] = [
   {
     "id": "2026-11-07-first-note",
     "date": "2026-11-07",
-    "salt": "dPNcBn5HSY/Y5rGzarXcVg==",
-    "iv": "TurTba5uNn3WPkOj",
-    "ct": "oVZd2ccRFec77hxpGfaV63uopjPHUtL9W38r6G+aFPTcXNZvxZ6uQF3iBq/bW6dYW3nUhMl4Q3Q7vi6gf6Z1VWBdJPDDG+iyBiuiTZeGM2U4qaU5APe+984jG1R3KGCNdQc6zN7SA/49GPPDscZMo4GqKkgkI3tod8N14Gv2P/kodgPlCx1Mg6h+2W1dk9a05Pmr9iDxry1xhYp/buVXFs/bpfdZRGICZ7r//7CRIgiXKn5OqaT8XiYbrSHGK46X+1AiOZiIYE33mcaG9ikfm2quArjoCRqUw1oXDMhOHN6ectfl/PU58TjdE43K+wOlS3eJg/SNH4luSZ4tbxXZdnpXe5xp81WYwG3S/sCyuJhpKFxQgsEQt/VVhiUmQ9a9gB7Ekxt8Em4auvRu11ZF+05EvcoxZiE+OgGqQvLqAVHooAdMOe289oLZqw36w6Xh9Hdk7jCLvh4wlrsIveSFrEKc60Ib6w==",
+    "salt": "nbNub74uEz80ip2/9+XDKA==",
+    "iv": "zsv13It4FqjdnLsj",
+    "ct": "ShmEkm4fC14aDjXk4WyeilXwn6KYAO7fiHhUyUNk+56uNQP0HqaiQnpEW6SrKgWWnhBCIg5ciWtW8MPZ4tNrSNQBrvsEyWLZ/m1z2ktDnCshR7D1ymZ+xdOGMOu4UpTdpy1CnrgE7s16Oh0dp3kIuLT0q9jWu93VvGl4XvzImhkk5zyjzUqwnf0wSwQRHbUvW5/x7QlkksBefE2V8fzUT5SOAQLC2uumSCPP0TvUKVWdqs0MndE3/0zzfpwehW6KlrWznRVbz5JKF/iaWzEw9mES+ewAstRcjkkFrXTSU7QL5knGRlZ/QUfN/1RkEqxTp3bJW5hiA+PGestOn6tHw9AP4wdNVV1hHG84agHgyFFSi4DvqbDRY0a5pPZ7sN0fDdrJ+BGPrEzFVK3BETa2XvWhGrBhLU5BQq8oqIHZ4l7jZT5fdF+bj9U5dwKtJLLc949VQFj9jJ+zbxi4dPLVUIxCcRA4WQ==",
     "iter": 200000
   }
 ]
