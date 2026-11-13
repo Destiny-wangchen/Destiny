@@ -277,7 +277,7 @@ async function publish() {
     }
     editPostPath.value = ''
     editVaultName.value = ''
-    if (manageOpen.value) await loadManage()
+    if (tab.value === 'manage') await loadManage()
     pubOk.value = true
   } catch (e) {
     pubErr.value = e instanceof Error ? e.message : String(e)
@@ -303,7 +303,6 @@ interface ManagedVault {
   kind: 'plain' | 'pw' | 'egg'
 }
 
-const manageOpen = ref(false)
 const manageLoading = ref(false)
 const manageMsg = ref('')
 const manageErr = ref('')
@@ -313,11 +312,6 @@ const manageVault = ref<ManagedVault[]>([])
 // 正在编辑的已有文件：保存时覆盖原文件，而不是新建
 const editPostPath = ref('')
 const editVaultName = ref('')
-
-async function toggleManage() {
-  manageOpen.value = !manageOpen.value
-  if (manageOpen.value) await loadManage()
-}
 
 async function loadManage() {
   manageMsg.value = ''
@@ -391,7 +385,11 @@ async function editPost(f: ManagedPost) {
     slugTouched.value = true
     editPostPath.value = f.path
     editVaultName.value = ''
-    manageMsg.value = `「${f.name}」已载入编辑器——改完点「一键发布」即覆盖原文。`
+    manageMsg.value = ''
+    pubErr.value = ''
+    pubOk.value = false
+    pubMsg.value = `「${f.name}」已载入编辑器——改完点「一键发布」即覆盖原文。`
+    tab.value = 'post'
   } catch (e) {
     manageErr.value = e instanceof Error ? e.message : String(e)
   }
@@ -416,7 +414,11 @@ async function editVault(f: ManagedVault) {
     slugTouched.value = true
     editVaultName.value = f.name
     editPostPath.value = ''
-    manageMsg.value = `「${payload.title}」已载入编辑器（密文·${entry.egg ? '彩蛋' : '免密'}）——改完点「一键发布」即覆盖原文。`
+    manageMsg.value = ''
+    pubErr.value = ''
+    pubOk.value = false
+    pubMsg.value = `「${payload.title}」已载入编辑器（密文·${entry.egg ? '彩蛋' : '免密'}）——改完点「一键发布」即覆盖原文。`
+    tab.value = 'post'
   } catch (e) {
     manageErr.value = e instanceof Error ? e.message : String(e)
   }
@@ -480,7 +482,12 @@ interface ProjItem {
   tags: string[]
 }
 
-const tab = ref<'post' | 'projects'>('post')
+const tab = ref<'post' | 'manage' | 'projects'>('post')
+
+// 进入「管文章」标签时自动读取仓库里的文章列表
+watch(tab, (t) => {
+  if (t === 'manage') loadManage()
+})
 const projects = ref<ProjItem[]>([])
 const projLoading = ref(false)
 const projMsg = ref('')
@@ -706,6 +713,14 @@ async function confirmDel() {
   <div class="tabs">
     <button class="tab" :class="{ active: tab === 'post' }" type="button" @click="tab = 'post'">
       写文章
+    </button>
+    <button
+      class="tab"
+      :class="{ active: tab === 'manage' }"
+      type="button"
+      @click="tab = 'manage'"
+    >
+      管文章
     </button>
     <button
       class="tab"

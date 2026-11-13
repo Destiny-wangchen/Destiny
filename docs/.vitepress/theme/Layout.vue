@@ -17,6 +17,7 @@ import Toc from './components/Toc.vue'
 import PostNav from './components/PostNav.vue'
 import { formatDate, simplifyDate } from './formatDate'
 import { useGardenSecret } from './useGardenSecret'
+import { data as bookPages } from '../book.data'
 
 const { page, frontmatter } = useData()
 const { unlocked } = useGardenSecret()
@@ -28,10 +29,28 @@ const secretGuarded = () =>
 // 返回目标：进本页之前的那一页（VitePress 把它存在 history.state.back 里）。
 // 不能用 history.back()——目录锚点跳转也会压一条历史，回退只会撤销那次跳转，
 // 而不是离开当前文章。这里在挂载时把上一页记下来，之后无论怎么跳锚点都指向它。
+// 例外：书籍章节页（seriesOrder > 0）的返回固定指向本书目录页，符合“读一本书”的心智。
 const route = useRoute()
 const backHref = ref(withBase('/'))
+const backLabel = ref('← 返回')
+
+// 当前页若是书籍章节，返回其所属书的目录页（seriesOrder 0）；否则 null
+function findChapterCover() {
+  const rel = page.value.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '.html')
+  const cur = bookPages.find((p) => p.url === `/${rel}`)
+  if (!cur || cur.seriesOrder === 0 || !cur.series) return null
+  return bookPages.find((p) => p.series === cur.series && p.seriesOrder === 0) ?? null
+}
 
 function resolveBack() {
+  const cover = findChapterCover()
+  if (cover) {
+    backHref.value = withBase(cover.url)
+    backLabel.value = '← 返回目录'
+    return
+  }
+  backLabel.value = '← 返回'
+  if (typeof window === 'undefined') return
   const back = (window.history.state as { back?: string } | null)?.back
   if (typeof back === 'string' && back) {
     const url = new URL(back, window.location.origin)
@@ -65,7 +84,7 @@ watch(() => route.path, resolveBack, { immediate: true })
       <WriteView v-else-if="frontmatter.layout === 'write'" />
 
       <article v-else class="post">
-        <a class="back-link" :href="backHref">← 返回</a>
+        <a class="back-link" :href="backHref">{{ backLabel }}</a>
         <header class="post-header">
           <h1 class="post-title">{{ frontmatter.title }}</h1>
           <div class="post-meta">
