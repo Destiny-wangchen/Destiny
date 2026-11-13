@@ -294,6 +294,9 @@ interface ManagedPost {
   name: string
   path: string
   sha: string
+  title: string
+  series: string
+  date: string
 }
 interface ManagedVault {
   name: string
@@ -313,6 +316,44 @@ const manageVault = ref<ManagedVault[]>([])
 const editPostPath = ref('')
 const editVaultName = ref('')
 
+// —— 折叠分组：默认全部收起，点一下展开 ——
+const expandedGroups = ref<string[]>([])
+const VAULT_GROUP = '__vault__'
+const NO_SERIES = '__none__'
+
+function toggleGroup(key: string) {
+  const i = expandedGroups.value.indexOf(key)
+  if (i === -1) expandedGroups.value.push(key)
+  else expandedGroups.value.splice(i, 1)
+}
+const isExpanded = (key: string) => expandedGroups.value.includes(key)
+
+const byTitle = (a: { title: string }, b: { title: string }) =>
+  a.title.localeCompare(b.title, 'zh-Hans-CN')
+
+/** 公开文章按 series 分组；组间按系列名拼音排，未分组放最后，组内按标题拼音排 */
+const postGroups = computed(() => {
+  const map = new Map<string, ManagedPost[]>()
+  for (const p of managePosts.value) {
+    const key = p.series || NO_SERIES
+    if (!map.has(key)) map.set(key, [])
+    map.get(key)!.push(p)
+  }
+  return [...map.entries()]
+    .map(([key, posts]) => ({
+      key,
+      name: key === NO_SERIES ? '未分组' : key,
+      posts: posts.slice().sort(byTitle)
+    }))
+    .sort((a, b) => {
+      if (a.key === NO_SERIES) return 1
+      if (b.key === NO_SERIES) return -1
+      return a.name.localeCompare(b.name, 'zh-Hans-CN')
+    })
+})
+
+const vaultSorted = computed(() => manageVault.value.slice().sort(byTitle))
+
 async function loadManage() {
   manageMsg.value = ''
   manageErr.value = ''
@@ -320,9 +361,13 @@ async function loadManage() {
   try {
     const postsRes = await fetch(`https://api.github.com/repos/${REPO}/contents/docs/posts?ref=main`)
     if (!postsRes.ok) throw new Error(`读取公开文章失败（GitHub ${postsRes.status}）`)
-    managePosts.value = ((await postsRes.json()) as any[])
-      .filter((f) => f.type === 'file' && f.name.endsWith('.md'))
-      .map((f) => ({ name: f.name, path: f.path, sha: f.sha }))
+    const files = ((await postsRes.json()) as any[]).filter(
+      (f) => f.type === 'file' && f.name.endsWith('.md')
+    )
+    // 目录列表不带文件内容，逐个取回解析 frontmatter 里的标题和系列
+    managePosts.value = await Promise.all(files.map((f) => fetchPostMeta(f.name, f.path, f.sha)))
+    // 默认全部收起，刷新后不保留旧的展开状态
+    expandedGroups.value = []
 
     const vaultRes = await fetch(`https://api.github.com/repos/${REPO}/contents/private-vault?ref=main`)
     if (!vaultRes.ok) throw new Error(`读取密文文章失败（GitHub ${vaultRes.status}）`)
@@ -356,6 +401,21 @@ async function fetchRaw(path: string) {
   if (!res.ok) throw new Error(`读取 ${path} 失败（GitHub ${res.status}）`)
   const j = await res.json()
   return decodeB64(j.content)
+}
+
+/** 取单篇文章的标题与系列，用于管理列表分组；读取失败时退回文件名 */
+async function fetchPostMeta(name: string, path: string, sha: string): Promise<ManagedPost> {
+  const fallback = { title: name.replace(/\.md$/, ''), series: '', date: '' }
+  try {
+    const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/${encodeURI(path)}`)
+    if (!res.ok) throw new Error()
+    const md = await res.text()
+    const p = parsePost(md)
+    const series = (md.match(/^series:\s*(.+)$/m) ?? [])[1]?.trim() ?? ''
+    return { name, path, sha, title: p.title || fallback.title, series, date: p.date }
+  } catch {
+    return { name, path, sha, ...fallback }
+  }
 }
 
 /** 极简 frontmatter 解析，仅覆盖一键发布生成的格式 */
@@ -885,43 +945,6 @@ async function confirmDel() {
     </p>
     <p v-else-if="pubMsg" class="pub-ok">{{ pubMsg }}</p>
     <p v-if="pubErr" class="pub-err">{{ pubErr }}</p>
-
-    <!-- 文章管理：编辑 / 删除已有文章 -->
-    <div class="manage">
-      <button class="text-btn" type="button" @click="toggleManage">
-        {{ manageOpen ? '收起文章管理 ▲' : '文章管理（编辑 / 删除）▼' }}
-      </button>
-      <div v-if="manageOpen" class="manage-panel">
-        <p v-if="manageLoading" class="hint">读取中…</p>
-        <p v-if="manageMsg" class="hint">{{ manageMsg }}</p>
-        <p v-if="manageErr" class="pub-err">{{ manageErr }}</p>
-
-        <template v-if="!manageLoading">
-          <p class="manage-head">公开文章（{{ managePosts.length }}）</p>
-          <p v-if="!managePosts.length" class="hint">还没有公开文章。</p>
-          <div v-for="f in managePosts" :key="f.path" class="manage-row">
-            <span class="manage-name">{{ f.name }}</span>
-            <span class="manage-actions">
-              <button class="text-btn" type="button" @click="editPost(f)">编辑</button>
-              <button class="text-btn danger" type="button" @click="removePost(f)">删除</button>
-            </span>
-          </div>
-
-          <p class="manage-head">密文文章（{{ manageVault.length }}）</p>
-          <p v-if="!manageVault.length" class="hint">还没有密文文章。</p>
-          <div v-for="f in manageVault" :key="f.path" class="manage-row">
-            <span class="manage-name">
-              {{ f.title }}
-              <em class="manage-kind">{{ f.kind === 'plain' ? '免密' : f.kind === 'egg' ? '彩蛋' : '密码' }}</em>
-            </span>
-            <span class="manage-actions">
-              <button v-if="f.kind !== 'pw'" class="text-btn" type="button" @click="editVault(f)">编辑</button>
-              <button class="text-btn danger" type="button" @click="removeVault(f)">删除</button>
-            </span>
-          </div>
-        </template>
-      </div>
-    </div>
   </div>
 
   <div class="howto">
@@ -937,7 +960,73 @@ async function confirmDel() {
   </div>
   </template>
 
-  <template v-else>
+  <template v-else-if="tab === 'manage'">
+  <p class="page-desc">
+    编辑或删除已发布的公开文章与密文文章。列表实时来自 GitHub 仓库，进入本页自动读取。
+  </p>
+
+  <div class="field">
+    <button class="btn ghost" type="button" :disabled="manageLoading" @click="loadManage">
+      {{ manageLoading ? '读取中…' : '刷新列表' }}
+    </button>
+    <span v-if="!hasToken" class="hint">
+      提示：删除文章需要 GitHub Token（在「写文章」标签底部配置一次）
+    </span>
+  </div>
+
+  <p v-if="manageMsg" class="pub-ok">{{ manageMsg }}</p>
+  <p v-if="manageErr" class="pub-err">{{ manageErr }}</p>
+
+  <p v-if="manageLoading" class="hint">读取中…</p>
+  <div v-else class="manage-panel">
+    <p v-if="!managePosts.length && !manageVault.length" class="hint">还没有文章。</p>
+
+    <!-- 公开文章：按系列折叠分组 -->
+    <div v-for="g in postGroups" :key="g.key" class="group">
+      <button class="group-head" type="button" @click="toggleGroup(g.key)">
+        <span class="group-name">{{ g.name }}</span>
+        <span class="group-count">{{ g.posts.length }} 篇 {{ isExpanded(g.key) ? '▾' : '▸' }}</span>
+      </button>
+      <div v-if="isExpanded(g.key)" class="group-body">
+        <div v-for="f in g.posts" :key="f.path" class="manage-row">
+          <button class="manage-title" type="button" @click="editPost(f)">{{ f.title }}</button>
+          <span class="manage-actions">
+            <button class="text-btn danger" type="button" @click="removePost(f)">删除</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 密文文章：单独一组 -->
+    <div v-if="manageVault.length" class="group">
+      <button class="group-head" type="button" @click="toggleGroup(VAULT_GROUP)">
+        <span class="group-name">密文文章</span>
+        <span class="group-count">
+          {{ manageVault.length }} 篇 {{ isExpanded(VAULT_GROUP) ? '▾' : '▸' }}
+        </span>
+      </button>
+      <div v-if="isExpanded(VAULT_GROUP)" class="group-body">
+        <div v-for="f in vaultSorted" :key="f.path" class="manage-row">
+          <button
+            class="manage-title"
+            type="button"
+            :disabled="f.kind === 'pw'"
+            :title="f.kind === 'pw' ? '密码加密的文章无法在此编辑，可删除后重新发布' : ''"
+            @click="editVault(f)"
+          >
+            {{ f.title }}
+            <em class="manage-kind">{{ f.kind === 'plain' ? '免密' : f.kind === 'egg' ? '彩蛋' : '密码' }}</em>
+          </button>
+          <span class="manage-actions">
+            <button class="text-btn danger" type="button" @click="removeVault(f)">删除</button>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </template>
+
+  <template v-else-if="tab === 'projects'">
     <p class="page-desc">在这里添加、修改、删除项目页的卡片，保存后 1-2 分钟自动上线。</p>
 
     <div class="field">
@@ -1214,21 +1303,46 @@ async function confirmDel() {
   color: #c0392b;
   font-size: 0.875rem;
 }
-.manage {
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-}
+/* —— 文章管理：系列折叠分组 —— */
 .manage-panel {
   margin-top: 0.75rem;
   display: grid;
-  gap: 0.35rem;
+  gap: 0.5rem;
 }
-.manage-head {
-  margin: 0.75rem 0 0.1rem;
+.group {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.group-head {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: var(--code-bg);
+  color: var(--fg);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+.group-head:hover {
+  background: var(--border);
+}
+.group-name {
+  font-weight: 500;
+}
+.group-count {
   color: var(--muted);
-  font-size: 0.8125rem;
-  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.group-body {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.5rem;
 }
 .manage-row {
   display: flex;
@@ -1240,8 +1354,22 @@ async function confirmDel() {
   border-radius: 6px;
   font-size: 0.875rem;
 }
-.manage-name {
+.manage-title {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--fg);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
   overflow-wrap: break-word;
+}
+.manage-title:hover:not(:disabled) {
+  text-decoration: underline;
+}
+.manage-title:disabled {
+  color: var(--muted);
+  cursor: default;
 }
 .manage-kind {
   font-style: normal;
