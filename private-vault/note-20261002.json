@@ -1,12 +1,9 @@
 {
   "id": "note-20261002",
   "date": "2026-10-02",
-  "plain": true,
-  "payload": {
-    "title": "测试",
-    "tags": [
-      "密文"
-    ],
-    "body": "\n我坦然承认\n我就是喜欢博尔赫斯呀\n"
-  }
+  "egg": true,
+  "salt": "Pgne5DY17PinNga+CQ89EA==",
+  "iv": "9lhQp+GH9bfFYj6r",
+  "ct": "q3D9cBkaxyH0PERyTl9WXVVCX5MLMa6aIKLsrcgIednjkkc00M0qAAHW26BNPh2VVYfKIfz3lgdBXz2BoFr5ECEeOqLegos+5gophTjJStIdymSnIUM5n4P+/wEvDPotILazRrIqAYp2jutRp1PDWO8=",
+  "iter": 200000
 }
