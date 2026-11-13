@@ -2,78 +2,103 @@
 import { computed } from 'vue'
 import { useData, withBase } from 'vitepress'
 import { data as posts } from '../../posts.data'
-import { findSeries, type SeriesItem } from '../../series'
-import type { PostMeta } from '../../posts.data'
+import { data as bookPages } from '../../book.data'
 
-const { page, frontmatter } = useData()
-
-// posts.data 里的 url 形如 /posts/hello-world.html，页面数据里是 posts/hello-world.md
-const currentUrl = computed(() => `/${page.value.relativePath.replace(/\.md$/, '.html')}`)
-const current = computed(() => posts.find((p: PostMeta) => p.url === currentUrl.value))
-
-// 页面 frontmatter 声明的系列（cbook/icbook 等非 posts 页由此接入系列导航）
-const fmSeries = computed(() => String(frontmatter.value.series ?? ''))
-
-interface NavEntry {
-  title: string
+interface NavItem {
   url: string
-  order: number
-  date?: string
+  title: string
+  series: string
+  seriesOrder: number
+  date: string
+  isBook: boolean
 }
 
-// 同系列按 seriesOrder 排；无系列的全站在时间轴上按正序排（上一篇 = 更早的一篇）
-const ordered = computed<NavEntry[]>(() => {
-  // 1) frontmatter 指定了系列（例题册/手册章节页）：按注册表取全系列
-  if (fmSeries.value) {
-    const def = findSeries(fmSeries.value)
-    if (def) return def.items.map((i: SeriesItem) => ({ title: i.title, url: i.link, order: i.order }))
-  }
-  // 2) 注册表里的文章系列（同一系列的文章散落在注册表时，以注册表为准）
-  if (current.value?.series) {
-    const def = findSeries(current.value.series)
-    if (def) return def.items.map((i: SeriesItem) => ({ title: i.title, url: i.link, order: i.order }))
-    // 系列未进注册表：退回 posts.data 内部聚合
-    return posts
-      .filter((p: PostMeta) => p.series === current.value!.series)
-      .sort((a, b) => a.seriesOrder - b.seriesOrder || a.date.localeCompare(b.date))
-  }
-  // 3) 无系列文章：全站时间轴
-  return [...posts]
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .map((p: PostMeta) => ({ title: p.title, url: p.url, order: 0, date: p.date }))
+const { page } = useData()
+
+// currentUrl 口径与内容加载器一致：cbook/index.md → /cbook/，posts/hello-world.md → /posts/hello-world.html
+const currentUrl = computed(() => {
+  const rel = page.value.relativePath.replace(/(^|\/)index\.md$/, '$1')
+  return `/${rel.replace(/\.md$/, '.html')}`
 })
 
-const index = computed(() => ordered.value.findIndex((e) => e.url === currentUrl.value))
-const inSeriesNav = computed(() => !!fmSeries.value || !!current.value?.series)
-const total = computed(() => (inSeriesNav.value ? ordered.value.length : 0))
+const bookItems: NavItem[] = bookPages.map((p) => ({
+  url: p.url,
+  title: p.title,
+  series: p.series,
+  seriesOrder: p.seriesOrder,
+  date: '',
+  isBook: true
+}))
+const postItems: NavItem[] = posts.map((p) => ({
+  url: p.url,
+  title: p.title,
+  series: p.series,
+  seriesOrder: p.seriesOrder,
+  date: p.date,
+  isBook: false
+}))
 
-const prev = computed(() => (index.value > 0 ? ordered.value[index.value - 1] : null))
-const next = computed(() =>
-  index.value >= 0 && index.value < ordered.value.length - 1 ? ordered.value[index.value + 1] : null
+const current = computed(
+  () => bookItems.find((p) => p.url === currentUrl.value) ?? postItems.find((p) => p.url === currentUrl.value)
 )
 
-// 只有系列文章才显示（2/4）这样的进度
-const progress = (i: number) => (total.value ? `（${i + 1}/${total.value}）` : '')
+// 兄弟序列：书籍按 seriesOrder 排（目录页 0 排最前）；
+// 文章有同名系列按系列排，否则落在全站时间轴上（上一篇 = 更早的一篇）
+const siblings = computed<NavItem[]>(() => {
+  const c = current.value
+  if (!c) return []
+  if (c.isBook) {
+    return bookItems.filter((p) => p.series === c.series).sort((a, b) => a.seriesOrder - b.seriesOrder)
+  }
+  const group = postItems.filter((p) => p.series !== '' && p.series === c.series)
+  return group.length > 1
+    ? group.slice().sort((a, b) => a.seriesOrder - b.seriesOrder)
+    : postItems.slice().sort((a, b) => a.date.localeCompare(b.date))
+})
+
+const isBookChain = computed(() => !!current.value?.isBook)
+
+// 编号集合：书籍链去掉目录页（seriesOrder 0），章节才是 1/8、2/8
+const chapters = computed<NavItem[]>(() =>
+  isBookChain.value ? siblings.value.filter((p) => p.seriesOrder > 0) : siblings.value
+)
+
+const numbered = computed(
+  () => isBookChain.value || (!!current.value?.series && siblings.value.length > 1)
+)
+
+const index = computed(() => (current.value ? siblings.value.indexOf(current.value) : -1))
+const prev = computed(() => (index.value > 0 ? siblings.value[index.value - 1] : null))
+const next = computed(() =>
+  index.value >= 0 && index.value < siblings.value.length - 1 ? siblings.value[index.value + 1] : null
+)
+
+function posOf(item: NavItem) {
+  if (!numbered.value) return ''
+  if (isBookChain.value && item.seriesOrder === 0) return ''
+  const i = chapters.value.indexOf(item)
+  return i >= 0 ? `（${i + 1}/${chapters.value.length}）` : ''
+}
+
+const prevLabel = computed(() => {
+  if (!prev.value) return ''
+  // 章节链的上家是目录页时，文案换成「目录」
+  if (isBookChain.value && prev.value.seriesOrder === 0) return '← 目录'
+  return `← 上一篇${posOf(prev.value)}`
+})
+const nextLabel = computed(() => (next.value ? `下一篇${posOf(next.value)} →` : ''))
 </script>
 
 <template>
   <nav v-if="prev || next" class="post-nav" aria-label="文章导航">
-    <a
-      v-if="prev"
-      class="nav-item prev"
-      :href="withBase(prev.url)"
-    >
-      <span class="nav-label">← 上一篇{{ progress(index - 1) }}</span>
+    <a v-if="prev" class="nav-item prev" :href="withBase(prev.url)">
+      <span class="nav-label">{{ prevLabel }}</span>
       <span class="nav-title">{{ prev.title }}</span>
     </a>
     <span v-else class="nav-item" aria-hidden="true" />
 
-    <a
-      v-if="next"
-      class="nav-item next"
-      :href="withBase(next.url)"
-    >
-      <span class="nav-label">下一篇{{ progress(index + 1) }} →</span>
+    <a v-if="next" class="nav-item next" :href="withBase(next.url)">
+      <span class="nav-label">{{ nextLabel }}</span>
       <span class="nav-title">{{ next.title }}</span>
     </a>
     <span v-else class="nav-item" aria-hidden="true" />

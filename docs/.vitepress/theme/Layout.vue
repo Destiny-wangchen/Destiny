@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useData } from 'vitepress'
+import { ref, watch } from 'vue'
+import { useData, useRoute } from 'vitepress'
 import { withBase } from 'vitepress'
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
@@ -11,6 +12,9 @@ import QuizApp from './components/QuizApp.vue'
 import VaultView from './components/VaultView.vue'
 import WriteView from './components/WriteView.vue'
 import PageView from './components/PageView.vue'
+import Share from './components/Share.vue'
+import Toc from './components/Toc.vue'
+import PostNav from './components/PostNav.vue'
 import { formatDate, simplifyDate } from './formatDate'
 import { useGardenSecret } from './useGardenSecret'
 
@@ -21,14 +25,26 @@ const { unlocked } = useGardenSecret()
 const secretGuarded = () =>
   ['vault', 'write'].includes(String(frontmatter.value.layout)) && !unlocked.value
 
-// 返回：同站内来路用浏览器后退（保留列表位置），直接打开的文章回首页
-function goBack(e: MouseEvent) {
-  const ref = document.referrer
-  if (ref && new URL(ref).origin === window.location.origin && window.history.length > 1) {
-    e.preventDefault()
-    window.history.back()
+// 返回目标：进本页之前的那一页（VitePress 把它存在 history.state.back 里）。
+// 不能用 history.back()——目录锚点跳转也会压一条历史，回退只会撤销那次跳转，
+// 而不是离开当前文章。这里在挂载时把上一页记下来，之后无论怎么跳锚点都指向它。
+const route = useRoute()
+const backHref = ref(withBase('/'))
+
+function resolveBack() {
+  const back = (window.history.state as { back?: string } | null)?.back
+  if (typeof back === 'string' && back) {
+    const url = new URL(back, window.location.origin)
+    // 同一个页面（只是 hash 不同）不算上一级
+    if (url.pathname !== window.location.pathname) {
+      backHref.value = url.pathname + url.search
+      return
+    }
   }
+  backHref.value = withBase('/')
 }
+
+watch(() => route.path, resolveBack, { immediate: true })
 </script>
 
 <template>
@@ -49,7 +65,7 @@ function goBack(e: MouseEvent) {
       <WriteView v-else-if="frontmatter.layout === 'write'" />
 
       <article v-else class="post">
-        <a class="back-link" :href="withBase('/')" @click="goBack">← 返回</a>
+        <a class="back-link" :href="backHref">← 返回</a>
         <header class="post-header">
           <h1 class="post-title">{{ frontmatter.title }}</h1>
           <div class="post-meta">
@@ -57,10 +73,12 @@ function goBack(e: MouseEvent) {
             <span v-for="t in frontmatter.tags || []" :key="t" class="tag">#{{ t }}</span>
           </div>
         </header>
+        <Toc />
         <div class="post-content">
           <Content />
         </div>
-        <div class="post-footer-info"><PageView /></div>
+        <PostNav />
+        <div class="post-footer-info"><Share /><PageView /></div>
       </article>
     </main>
     <Footer />
@@ -68,11 +86,20 @@ function goBack(e: MouseEvent) {
 </template>
 
 <style scoped>
+/* 吸附在视口左上，长文往下翻也随时能返回 */
 .back-link {
+  position: sticky;
+  top: 0.5rem;
+  z-index: 20;
   display: inline-block;
-  margin-top: 2.5rem;
+  width: fit-content;
+  margin: 1.5rem 0 0 -0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
   color: var(--muted);
   font-size: 0.875rem;
+  background: var(--bg);
+  box-shadow: 0 0 0 6px var(--bg);
 }
 .back-link:hover {
   color: var(--fg);

@@ -14,7 +14,8 @@ const baseNav = [
   { text: '首页', link: '/' },
   { text: '归档', link: '/archive.html' },
   { text: '项目', link: '/projects.html' },
-  { text: '应用', link: '/apps.html' }
+  { text: '应用', link: '/apps.html' },
+  { text: '关于', link: '/about.html' }
 ]
 
 // 花锁未解锁时，「密文」入口不渲染，访客不可见

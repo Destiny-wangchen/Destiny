@@ -22,6 +22,11 @@ html.dark {
   box-sizing: border-box;
 }
 
+/* 锚点跳转平滑滚动 */
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   margin: 0;
@@ -90,6 +95,8 @@ main.container {
   margin: 2rem 0 1rem;
   padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--border);
+  /* 锚点跳转时顶部留出呼吸空间 */
+  scroll-margin-top: 1.5rem;
 }
 
 .post-content h3 {

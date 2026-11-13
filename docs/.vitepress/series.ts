@@ -52,7 +52,7 @@ export const seriesList: SeriesDef[] = [
     link: '/posts/build-this-blog.html',
     items: [
       { title: 'Markdown 写作指南：10 分钟学会，够用一辈子', link: '/posts/markdown-syntax.html', order: 1 },
-      { title: '手把手教你搭建个人博客（小白版）', link: '/posts/build-this-blog.html', order: 2 }
+      { title: '手把手教你搭建个人博客', link: '/posts/build-this-blog.html', order: 2 }
     ]
   }
 ]
