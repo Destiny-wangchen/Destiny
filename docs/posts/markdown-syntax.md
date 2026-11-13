@@ -1,10 +1,13 @@
 ---
 title: Markdown 写作指南：10 分钟学会，够用一辈子
+description: 只学最常用的几个小符号，打字时顺手一加，文字自动变成好看的排版
 date: 2026-06-01
 tags:
   - Markdown
   - 教程
   - 工具
+series: 网站开发
+seriesOrder: 1
 ---
 
 > 不会打字之外任何电脑技能，也能 10 分钟看懂这篇。

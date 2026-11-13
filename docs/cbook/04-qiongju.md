@@ -1,5 +1,7 @@
 ---
 title: 第 4 章 · 穷举与递推
+series: C语言
+seriesOrder: 4
 ---
 
 # 第 4 章 · 穷举与递推

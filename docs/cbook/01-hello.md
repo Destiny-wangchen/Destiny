@@ -1,5 +1,7 @@
 ---
 title: 第 1 章 · Hello 世界与顺序结构
+series: C语言
+seriesOrder: 1
 ---
 
 # 第 1 章 · Hello 世界与顺序结构

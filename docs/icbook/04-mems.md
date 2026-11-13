@@ -1,5 +1,7 @@
 ---
 title: 第 4 章 · 会动的芯片：MEMS
+series: 集成电路
+seriesOrder: 4
 ---
 
 # 第 4 章 · 会动的芯片：MEMS

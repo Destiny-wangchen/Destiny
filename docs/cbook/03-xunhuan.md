@@ -1,5 +1,7 @@
 ---
 title: 第 3 章 · 循环结构
+series: C语言
+seriesOrder: 3
 ---
 
 # 第 3 章 · 循环结构

@@ -1,5 +1,7 @@
 ---
 title: 第 6 章 · 芯片上的实验室：BioMEMS
+series: 集成电路
+seriesOrder: 6
 ---
 
 # 第 6 章 · 芯片上的实验室：BioMEMS

@@ -1,5 +1,7 @@
 ---
 title: 第 2 章 · 分支结构
+series: C语言
+seriesOrder: 2
 ---
 
 # 第 2 章 · 分支结构
