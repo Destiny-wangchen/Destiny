@@ -222,6 +222,50 @@ html.dark ::selection {
   background: rgba(230, 230, 230, 0.2);
 }
 
+/* ============ 学完即练（系列尾篇的刷题入口） ============ */
+.learn-cta {
+  margin: 2.5rem 0 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.learn-cta .cta-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.learn-cta .cta-title {
+  margin: 0.4rem 0 0.5rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.learn-cta p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+
+.learn-cta .cta-btn {
+  display: inline-block;
+  padding: 0.5rem 1.1rem;
+  border-radius: 6px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.learn-cta .cta-btn:hover {
+  opacity: 0.85;
+  text-decoration: none;
+}
+
 /* ============ 移动端 ============ */
 @media (max-width: 640px) {
   .container {
