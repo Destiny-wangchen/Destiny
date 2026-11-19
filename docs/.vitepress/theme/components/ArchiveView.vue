@@ -1,18 +1,18 @@
 ﻿<script setup lang="ts">
 import { computed, ref } from 'vue'
 import { withBase } from 'vitepress'
-import { data as posts } from '../../posts.data'
-import type { PostMeta } from '../../posts.data'
+import { data as posts } from '../../archive.data'
+import type { ArchiveEntry } from '../../archive.data'
 import { simplifyDate } from '../formatDate'
 
 const activeTag = ref('')
 
 const allTags = computed(() =>
-  Array.from(new Set(posts.flatMap((p: PostMeta) => p.tags))).sort()
+  Array.from(new Set(posts.flatMap((p: ArchiveEntry) => p.tags))).sort()
 )
 
 const filtered = computed(() =>
-  activeTag.value ? posts.filter((p: PostMeta) => p.tags.includes(activeTag.value)) : posts
+  activeTag.value ? posts.filter((p: ArchiveEntry) => p.tags.includes(activeTag.value)) : posts
 )
 
 const groups = computed(() => {
@@ -20,7 +20,7 @@ const groups = computed(() => {
   const list = [...filtered.value].sort(
     (a, b) => b.date.localeCompare(a.date) || b.updated.localeCompare(a.updated)
   )
-  const map = new Map<string, PostMeta[]>()
+  const map = new Map<string, ArchiveEntry[]>()
   for (const p of list) {
     const year = p.date.slice(0, 4)
     if (!map.has(year)) map.set(year, [])
@@ -56,6 +56,7 @@ function toggleTag(tag: string) {
       <li v-for="p in items" :key="p.url" class="archive-item">
         <span class="date">{{ simplifyDate(p.date) }}</span>
         <a class="title" :href="withBase(p.url)">{{ p.title }}</a>
+        <span v-if="p.series" class="series-chip">{{ p.series }}</span>
         <span v-if="p.updated !== p.date" class="updated-badge" :title="`更新于 ${p.updated}`">更新</span>
         <span v-for="t in p.tags" :key="t" class="tag">#{{ t }}</span>
       </li>
@@ -134,6 +135,13 @@ function toggleTag(tag: string) {
   color: var(--muted);
   font-size: 0.6875rem;
   border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+}
+.series-chip {
+  color: var(--muted);
+  font-size: 0.6875rem;
+  border: 1px dashed var(--border);
   border-radius: 4px;
   padding: 0.05rem 0.35rem;
 }
