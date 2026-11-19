@@ -9,6 +9,8 @@ const tags = ref('')
 const body = ref('')
 const isPrivate = ref(false)
 const isPinned = ref(false)
+// 编辑已有文章时，表单不管的 frontmatter 行（series / seriesOrder / home / description…）原样带回去
+const extraFm = ref<string[]>([])
 const slug = ref('')
 const slugTouched = ref(false)
 const copied = ref(false)
@@ -65,6 +67,7 @@ const frontmatter = computed(() => {
     tagList.value.forEach((t) => lines.push(`  - ${t}`))
   }
   if (isPinned.value) lines.push('pinned: true')
+  lines.push(...extraFm.value)
   lines.push('---', '')
   return lines.join('\n')
 })
@@ -162,6 +165,7 @@ function reset() {
   body.value = ''
   isPrivate.value = false
   isPinned.value = false
+  extraFm.value = []
   slug.value = ''
   slugTouched.value = false
   editPostPath.value = ''
@@ -297,6 +301,8 @@ interface ManagedPost {
   title: string
   series: string
   date: string
+  // null = frontmatter 没写 home，按“无系列默认上首页、有系列默认不上”推断
+  home: boolean | null
 }
 interface ManagedVault {
   name: string
@@ -403,32 +409,61 @@ async function fetchRaw(path: string) {
   return decodeB64(j.content)
 }
 
-/** 取单篇文章的标题与系列，用于管理列表分组；读取失败时退回文件名 */
+/** 取单篇文章的标题、系列与首页状态，用于管理列表分组；读取失败时退回文件名 */
 async function fetchPostMeta(name: string, path: string, sha: string): Promise<ManagedPost> {
-  const fallback = { title: name.replace(/\.md$/, ''), series: '', date: '' }
+  const fallback = { title: name.replace(/\.md$/, ''), series: '', date: '', home: null }
   try {
     const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/${encodeURI(path)}`)
     if (!res.ok) throw new Error()
     const md = await res.text()
     const p = parsePost(md)
     const series = (md.match(/^series:\s*(.+)$/m) ?? [])[1]?.trim() ?? ''
-    return { name, path, sha, title: p.title || fallback.title, series, date: p.date }
+    const hm = md.match(/^home:\s*(true|false)\b/m)
+    const home = hm ? hm[1] === 'true' : null
+    return { name, path, sha, title: p.title || fallback.title, series, date: p.date, home }
   } catch {
     return { name, path, sha, ...fallback }
   }
 }
 
+/** frontmatter 里表单不管的那些行（series / seriesOrder / home / description / private…），编辑后要原样写回 */
+function extraFrontmatter(fm: string): string[] {
+  const out: string[] = []
+  let inTags = false
+  for (const line of fm.split(/\r?\n/)) {
+    if (!line.trim()) continue
+    if (/^tags:/.test(line)) {
+      inTags = true
+      continue
+    }
+    if (inTags) {
+      if (/^\s+-\s/.test(line)) continue
+      inTags = false
+    }
+    if (/^(title|date|pinned)\b/.test(line)) continue
+    out.push(line)
+  }
+  return out
+}
+
 /** 极简 frontmatter 解析，仅覆盖一键发布生成的格式 */
 function parsePost(md: string) {
   const m = md.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/)
-  if (!m) return { title: '', date: today(), tags: '', body: md.trim(), pinned: false }
+  if (!m) return { title: '', date: today(), tags: '', body: md.trim(), pinned: false, extra: [] }
   const fm = m[1]
   const grab = (k: string) => (fm.match(new RegExp(`^${k}:\\s*(.+)$`, 'm')) ?? [])[1]?.trim() ?? ''
   const tagsM = fm.match(/tags:\s*\r?\n((?:\s*-.+\s*\r?\n?)+)/)
   const tags = tagsM
     ? tagsM[1].split(/\r?\n/).map((l) => l.replace(/^\s*-\s*/, '').trim()).filter(Boolean).join(', ')
     : ''
-  return { title: grab('title'), date: grab('date'), tags, body: m[2].trim(), pinned: /^\s*pinned:\s*true\b/m.test(fm) }
+  return {
+    title: grab('title'),
+    date: grab('date'),
+    tags,
+    body: m[2].trim(),
+    pinned: /^\s*pinned:\s*true\b/m.test(fm),
+    extra: extraFrontmatter(fm)
+  }
 }
 
 async function editPost(f: ManagedPost) {
@@ -440,6 +475,7 @@ async function editPost(f: ManagedPost) {
     tags.value = p.tags
     body.value = p.body
     isPinned.value = p.pinned
+    extraFm.value = p.extra
     isPrivate.value = false
     slug.value = f.name.replace(/\.md$/, '')
     slugTouched.value = true
@@ -575,6 +611,30 @@ async function savePostDate(f: ManagedPost) {
     manageErr.value = e instanceof Error ? e.message : String(e)
   } finally {
     dateEditSaving.value = false
+  }
+}
+
+/** 写入/覆盖 frontmatter 的 home 字段，其余内容不动 */
+function setFrontmatterHome(md: string, home: boolean) {
+  const m = md.match(/^(---\r?\n)([\s\S]*?)(\r?\n---)/)
+  if (!m) return md
+  const fm = /^home:[ \t]*.*$/m.test(m[2])
+    ? m[2].replace(/^home:[ \t]*.*$/m, `home: ${home}`)
+    : `${m[2]}\nhome: ${home}`
+  return m[1] + fm + m[3] + md.slice(m[0].length)
+}
+
+/** 首页开关：系列内的文章默认不上首页，这里单独放开或收回 */
+async function toggleHome(f: ManagedPost) {
+  const on = f.home === null ? !f.series : f.home
+  manageErr.value = ''
+  try {
+    const md = await fetchRaw(f.path)
+    await ghPut(f.path, setFrontmatterHome(md, !on), `home: ${f.name} ${on ? '移出首页' : '显示在首页'}`)
+    manageMsg.value = `「${f.title}」已${on ? '移出首页' : '显示在首页'}，1-2 分钟后生效。`
+    await loadManage()
+  } catch (e) {
+    manageErr.value = e instanceof Error ? e.message : String(e)
   }
 }
 
@@ -1034,6 +1094,7 @@ async function confirmDel() {
   <template v-else-if="tab === 'manage'">
   <p class="page-desc">
     编辑或删除已发布的公开文章与密文文章。列表实时来自 GitHub 仓库，进入本页自动读取。
+    首页文章流只收独立文章：带 series 的连载默认不进首页，需要露出时点「显示在首页」。
   </p>
 
   <div class="field">
@@ -1064,6 +1125,9 @@ async function confirmDel() {
             <button class="manage-title" type="button" @click="editPost(f)">{{ f.title }}</button>
             <span class="manage-actions">
               <span class="manage-date">{{ f.date }}</span>
+              <button class="text-btn" type="button" @click="toggleHome(f)">
+                {{ (f.home === null ? !f.series : f.home) ? '移出首页' : '显示在首页' }}
+              </button>
               <button class="text-btn" type="button" @click="startDateEdit(f.path, f.date)">改日期</button>
               <button class="text-btn danger" type="button" @click="removePost(f)">删除</button>
             </span>

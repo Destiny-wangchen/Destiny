@@ -14,6 +14,8 @@ export interface PostMeta {
   // 系列：同一 series 的文章组成上下篇，seriesOrder 决定章节顺序（从 1 开始）
   series: string
   seriesOrder: number
+  // 是否出现在首页：null = 未设置（无系列默认显示，有系列默认隐藏），true/false = 显式指定
+  home: boolean | null
 }
 
 declare const data: PostMeta[]
@@ -53,7 +55,8 @@ export default createContentLoader('posts/*.md', {
           tags: Array.isArray(p.frontmatter.tags) ? p.frontmatter.tags.map(String) : [],
           pinned: !!p.frontmatter.pinned,
           series: String(p.frontmatter.series ?? ''),
-          seriesOrder: Number(p.frontmatter.seriesOrder ?? 0)
+          seriesOrder: Number(p.frontmatter.seriesOrder ?? 0),
+          home: p.frontmatter.home === undefined ? null : !!p.frontmatter.home
         }
       })
       // 首页：置顶文章排最前，其余按发布日期倒序

@@ -1,4 +1,5 @@
 ﻿<script setup lang="ts">
+import { computed } from 'vue'
 import { withBase, useData } from 'vitepress'
 import { data as posts } from '../../posts.data'
 import { seriesList } from '../../series'
@@ -6,6 +7,10 @@ import { simplifyDate } from '../formatDate'
 import VerseStone from './VerseStone.vue'
 
 const { frontmatter } = useData()
+
+// 首页文章流只放「独立文章」：系列内的连载（site 里的书、教程）通过系列卡片进入，
+// 不再混进首页。需要单独露出的，在「管文章」里打开“显示在首页”（frontmatter home: true）。
+const homePosts = computed(() => posts.filter((p) => (p.home === null ? !p.series : p.home)))
 </script>
 
 <template>
@@ -30,7 +35,7 @@ const { frontmatter } = useData()
   </section>
 
   <ul class="post-list">
-    <li v-for="p in posts" :key="p.url" class="post-item">
+    <li v-for="p in homePosts" :key="p.url" class="post-item">
       <a class="post-title" :href="withBase(p.url)">{{ p.title }}</a>
       <p v-if="p.description" class="post-desc">{{ p.description }}</p>
       <div class="post-meta">
