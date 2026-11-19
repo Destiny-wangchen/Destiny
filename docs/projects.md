@@ -14,6 +14,12 @@ items:
     tags:
       - 科普
       - 教程
+  - name: "推理小说诡计总谱"
+    desc: "按「骗什么」编排的诡计谱系：密室、建筑、时间、身份、叙述与破壁，8 篇梳理近两百年推理小说的手法与脑洞。"
+    app: "/mbook/"
+    tags:
+      - 推理
+      - 读书笔记
   - name: "Destiny的花园"
     desc: "我的个人博客，基于 VitePress 构建并部署在 GitHub Pages 上。"
     repo: "https://github.com/Destiny-wangchen/Destiny"

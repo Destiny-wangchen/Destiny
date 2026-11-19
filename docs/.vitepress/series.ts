@@ -47,6 +47,21 @@ export const seriesList: SeriesDef[] = [
     ]
   },
   {
+    name: '推理小说诡计',
+    desc: '按"骗什么"编排的诡计谱系：密室、建筑、时间、身份、叙述、破壁，8 篇梳理近两百年的手法与脑洞。',
+    link: '/mbook/',
+    items: [
+      { title: '导论 · 诡计的解剖学', link: '/mbook/00-preface.html', order: 1 },
+      { title: '第 1 章 · 骗空间', link: '/mbook/01-space.html', order: 2 },
+      { title: '第 2 章 · 骗时间', link: '/mbook/02-time.html', order: 3 },
+      { title: '第 3 章 · 骗人', link: '/mbook/03-person.html', order: 4 },
+      { title: '第 4 章 · 骗语言', link: '/mbook/04-language.html', order: 5 },
+      { title: '第 5 章 · 骗期待', link: '/mbook/05-expectation.html', order: 6 },
+      { title: '第 6 章 · 舞台与模式', link: '/mbook/06-stage.html', order: 7 },
+      { title: '第 7 章 · 索引、对照表与阅读路线', link: '/mbook/07-appendix.html', order: 8 }
+    ]
+  },
+  {
     name: '网站开发',
     desc: '建站与写作：Markdown 写作指南与个人博客搭建实录。',
     link: '/posts/build-this-blog.html',
