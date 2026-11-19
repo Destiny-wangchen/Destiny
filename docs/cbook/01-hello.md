@@ -29,7 +29,7 @@ int main(void)
 
 这段代码里有本章的全部要点：scanf 里可以混着写普通字符（`*` 原样匹配输入）、中间计算先转 `long long` 防溢出。顺序结构的题，题面越长越是纸老虎——先把公式在纸上列出来，代码往往只有一两行。
 
-本章共 13 道题：2 道精讲例题 + 11 道自选练习。
+本章共 15 道题：2 道精讲例题 + 13 道自选练习。
 
 ## 精讲例题
 
@@ -651,4 +651,83 @@ int main() {
     return 0;
 }
 ```
+:::
+## 补充练习
+
+::: details 练习 14 · 我的机器上各类型有多大（题面与样例）
+
+不输入任何东西，输出 `int`、`long`、`double`、指针在你的机器上各占几个字节。
+
+**输出**：四行，形如 `int=4`。
+
+**样例**
+
+输出：
+```text
+int=4
+long=4
+double=8
+pointer=8
+```
+
+这题没有唯一答案。同一份代码在 32 位和 64 位、Windows 和 Linux 上结果不同，`long` 尤其不靠谱：Windows 上永远是 4 字节，64 位 Linux 上变成 8 字节。这也是跨平台代码要用 `stdint.h` 里 `int32_t`、`int64_t` 的原因。
+
+:::
+
+::: details 练习 14 · 参考代码
+
+```c
+/* 003【应用】用 sizeof 探测类型宽度 */
+#include <stdio.h>
+
+int main(void)
+{
+    printf("int=%d\n", (int)sizeof(int));
+    printf("long=%d\n", (int)sizeof(long));
+    printf("double=%d\n", (int)sizeof(double));
+    printf("pointer=%d\n", (int)sizeof(void *));
+    return 0;
+}
+```
+
+:::
+
+::: details 练习 15 · 圆柱体的体积（题面与样例）
+
+输入底面半径和高，输出圆柱体积，保留 3 位小数，圆周率取 3.14159。
+
+**输入**：两个实数，半径和高。  
+**输出**：体积，保留 3 位小数。
+
+**样例**
+
+输入：
+```text
+2 5
+```
+输出：
+```text
+62.832
+```
+
+`scanf` 读 `double` 必须用 `%lf`，`printf` 输出用 `%f` 就行。这条不对称的规则坑过很多人：读的时候写 `%f` 会读进一个错误的数，而且不报错。
+
+:::
+
+::: details 练习 15 · 参考代码
+
+```c
+/* 012【应用】圆柱体体积：double 的输入输出 */
+#include <stdio.h>
+
+int main(void)
+{
+    double r, h, v;
+    scanf("%lf%lf", &r, &h);
+    v = 3.14159 * r * r * h;
+    printf("%.3f\n", v);
+    return 0;
+}
+```
+
 :::

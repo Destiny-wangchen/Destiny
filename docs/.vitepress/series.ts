@@ -18,7 +18,7 @@ export interface SeriesDef {
 export const seriesList: SeriesDef[] = [
   {
     name: 'C语言',
-    desc: '按知识点分类的例题册：8 章讲练分离，75 题可自选练习；结尾附一学期踩坑总结。',
+    desc: '按知识点分类的例题册：13 章讲练分离，124 题可自选练习，从 Hello 世界到动态规划入门。',
     link: '/cbook/',
     items: [
       { title: '第 1 章 · Hello 世界与顺序结构', link: '/cbook/01-hello.html', order: 1 },
@@ -29,7 +29,29 @@ export const seriesList: SeriesDef[] = [
       { title: '第 6 章 · 数组', link: '/cbook/06-shuzu.html', order: 6 },
       { title: '第 7 章 · 字符串', link: '/cbook/07-zifuchuan.html', order: 7 },
       { title: '第 8 章 · 函数与递归', link: '/cbook/08-hanshu.html', order: 8 },
-      { title: '我把一学期 C 语言踩过的坑整理成了这份排坑清单', link: '/posts/c-language-pitfalls.html', order: 9 }
+      { title: '第 9 章 · 指针与内存', link: '/cbook/09-pointer.html', order: 9 },
+      { title: '第 10 章 · 结构体与链表', link: '/cbook/10-struct.html', order: 10 },
+      { title: '第 11 章 · 算法四板斧：前缀和、差分、双指针、二分', link: '/cbook/11-prefix.html', order: 11 },
+      { title: '第 12 章 · 搜索与图：从走迷宫到最短路', link: '/cbook/12-search.html', order: 12 },
+      { title: '第 13 章 · 动态规划入门', link: '/cbook/13-dp.html', order: 13 },
+      { title: '我把一学期 C 语言踩过的坑整理成了这份排坑清单', link: '/posts/c-language-pitfalls.html', order: 14 }
+    ]
+  },
+  {
+    name: 'C语言门诊',
+    desc: '学过 C 之后再往下看一层：10 个真实症状，从报错查到病灶，每篇配一个能跑的实验。',
+    link: '/clinic/',
+    items: [
+      { title: '病例 01 · 数组一大就崩，换个位置就好了', link: '/clinic/01-stack.html', order: 1 },
+      { title: '病例 02 · 整数为什么会突然变成负数', link: '/clinic/02-twos-complement.html', order: 2 },
+      { title: '病例 03 · 0.1 + 0.2 为什么不等于 0.3', link: '/clinic/03-float.html', order: 3 },
+      { title: '病例 04 · 一个 struct 凭什么占 12 字节', link: '/clinic/04-padding.html', order: 4 },
+      { title: '病例 05 · 同一个双重循环，换个内外层差十几倍', link: '/clinic/05-cache.html', order: 5 },
+      { title: '病例 06 · 没赋值，为什么打印出一堆奇怪的东西', link: '/clinic/06-uninitialized.html', order: 6 },
+      { title: '病例 07 · 一行 C 代码怎么变成 exe', link: '/clinic/07-build.html', order: 7 },
+      { title: '病例 08 · 函数调用时机器到底记了什么', link: '/clinic/08-stack-frame.html', order: 8 },
+      { title: '病例 09 · 端口被占用到底占了什么', link: '/clinic/09-port.html', order: 9 },
+      { title: '病例 10 · 连接被拒绝和超时不是一回事', link: '/clinic/10-handshake.html', order: 10 }
     ]
   },
   {

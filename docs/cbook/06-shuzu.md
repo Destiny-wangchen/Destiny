@@ -24,7 +24,7 @@ for (i = 1; i < n; ++i) {
 
 **二维数组**（扫雷、导航、模拟游戏）本质是「数组套数组」，双层下标 (r, c) 对应棋盘思维；处理边界用 `x >= 0 && x < n && y >= 0 && y < m` 的卫语句，把越界挡在取值之前。
 
-本章共 7 道题：2 道精讲例题 + 5 道自选练习。
+本章共 9 道题：2 道精讲例题 + 7 道自选练习。
 
 ## 精讲例题
 
@@ -676,4 +676,129 @@ int main(void)
     return 0;
 }
 ```
+:::
+## 补充练习
+
+::: details 练习 6 · 矩阵乘法（题面与样例）
+
+输入 n×m 的矩阵 A 和 m×p 的矩阵 B，输出 A×B。
+
+**输入**：第一行 n m p，随后 n 行 A，再随后 m 行 B。  
+**输出**：n 行，每行 p 个数，空格分隔。
+
+**样例**
+
+输入：
+```text
+2 3 2
+1 2 3
+4 5 6
+7 8
+9 10
+11 12
+```
+输出：
+```text
+58 64
+139 154
+```
+
+三重循环，最内层对应 `C[i][j] += A[i][k] * B[k][j]`。三个循环的顺序可以换，但**最内层走 k 时 B 是按列访问的**，数据量大时性能会差，这就是缓存局部性的问题。
+
+结果用 `long long`：三个 1000 相乘就溢出了。
+
+:::
+
+::: details 练习 6 · 参考代码
+
+```c
+/* 072【应用】矩阵乘法 */
+#include <stdio.h>
+
+int A[105][105], B[105][105];
+long long C[105][105];
+
+int main(void)
+{
+    int n, m, p, i, j, k;
+
+    scanf("%d%d%d", &n, &m, &p);
+    for (i = 0; i < n; ++i) for (j = 0; j < m; ++j) scanf("%d", &A[i][j]);
+    for (i = 0; i < m; ++i) for (j = 0; j < p; ++j) scanf("%d", &B[i][j]);
+
+    for (i = 0; i < n; ++i)
+        for (j = 0; j < p; ++j) {
+            C[i][j] = 0;
+            for (k = 0; k < m; ++k) C[i][j] += (long long)A[i][k] * B[k][j];
+        }
+
+    for (i = 0; i < n; ++i)
+        for (j = 0; j < p; ++j)
+            printf("%lld%c", C[i][j], j == p - 1 ? '\n' : ' ');
+    return 0;
+}
+```
+
+:::
+
+::: details 练习 7 · 螺旋方阵（题面与样例）
+
+输入 n，输出 n×n 的螺旋方阵：从左上角开始按顺时针填 1 到 n²。
+
+**输入**：一个整数 n（≤ 100）。  
+**输出**：n 行，每行 n 个数。
+
+**样例**
+
+输入：
+```text
+4
+```
+输出：
+```text
+1 2 3 4
+12 13 14 5
+11 16 15 6
+10 9 8 7
+```
+
+用四个边界 `top`、`bottom`、`left`、`right`，按"上边→右边→下边→左边"走一圈，然后四个边界各缩一格。边界缩到相交就停。
+
+`if (top < bottom)` 和 `if (left < right)` 这两个判断不能省：奇数阶的最后一行或一列只有一个元素，不加判断会被重复填一遍。
+
+:::
+
+::: details 练习 7 · 参考代码
+
+```c
+/* 073【应用】螺旋方阵 */
+#include <stdio.h>
+
+int a[105][105];
+
+int main(void)
+{
+    int n, i, j, top = 0, bottom, left = 0, right, v = 1;
+
+    scanf("%d", &n);
+    bottom = n - 1;
+    right = n - 1;
+
+    while (left <= right && top <= bottom) {
+        for (j = left; j <= right; ++j) a[top][j] = v++;
+        for (i = top + 1; i <= bottom; ++i) a[i][right] = v++;
+        if (top < bottom)
+            for (j = right - 1; j >= left; --j) a[bottom][j] = v++;
+        if (left < right)
+            for (i = bottom - 1; i > top; --i) a[i][left] = v++;
+        ++top; ++left; --bottom; --right;
+    }
+
+    for (i = 0; i < n; ++i)
+        for (j = 0; j < n; ++j)
+            printf("%d%c", a[i][j], j == n - 1 ? '\n' : ' ');
+    return 0;
+}
+```
+
 :::
