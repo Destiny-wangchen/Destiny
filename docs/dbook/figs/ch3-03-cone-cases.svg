@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="340" viewBox="0 0 760 340" role="img">
+<defs>
+<style>
+.s0{fill:none;stroke:#141414;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.s1{fill:none;stroke:#141414;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+.s2{fill:none;stroke:#141414;stroke-width:1.15;stroke-dasharray:8 4.5;stroke-linecap:butt}
+.s3{fill:none;stroke:#141414;stroke-width:1.05;stroke-dasharray:16 3 3 3;stroke-linecap:butt}
+.g0{fill:none;stroke:#9a9a9a;stroke-width:.95;stroke-dasharray:5 4}
+.g1{fill:none;stroke:#9a9a9a;stroke-width:.95}
+.ht{fill:url(#hatch);stroke:#141414;stroke-width:1.15}
+.t{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:21px;fill:#141414}
+.tb{font-family:Georgia,'Times New Roman',serif;font-size:19px;fill:#141414}
+.tn{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:15.5px;fill:#141414}
+.ts{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:13.5px;fill:#141414}
+</style>
+<marker id="ar" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+  <path d="M0,1.4 L10,5 L0,8.6 z" fill="#141414"/>
+</marker>
+<pattern id="hatch" width="5.2" height="5.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="5.2" stroke="#141414" stroke-width="0.85"/>
+</pattern>
+</defs><path class="s0" d="M54,152 L80,56 L106,152 Z"/><ellipse class="s1" cx="80" cy="152" rx="26" ry="8"/><line class="s3" x1="80" y1="166" x2="80" y2="42"/><line class="s0" x1="54" y1="120" x2="106" y2="120"/><ellipse class="s0" cx="80" cy="296" rx="34" ry="13"/><text class="tn" x="80" y="30" text-anchor="middle">圆</text><text class="ts" x="80" y="330" text-anchor="middle">⊥ 轴线</text><path class="s0" d="M204,152 L230,56 L256,152 Z"/><ellipse class="s1" cx="230" cy="152" rx="26" ry="8"/><line class="s3" x1="230" y1="166" x2="230" y2="42"/><line class="s0" x1="198" y1="62" x2="262" y2="94"/><ellipse class="s0" cx="230" cy="296" rx="36" ry="14"/><text class="tn" x="230" y="30" text-anchor="middle">椭圆</text><text class="ts" x="230" y="330" text-anchor="middle">与所有素线相交</text><path class="s0" d="M354,152 L380,56 L406,152 Z"/><ellipse class="s1" cx="380" cy="152" rx="26" ry="8"/><line class="s3" x1="380" y1="166" x2="380" y2="42"/><line class="s0" x1="372" y1="158" x2="396" y2="66"/><path class="s0" d="M348,298 L349.6,294.69 L351.2,291.54 L352.8,288.57 L354.4,285.76 L356,283.13 L357.6,280.66 L359.2,278.37 L360.8,276.24 L362.4,274.29 L364,272.5 L365.6,270.89 L367.2,269.44 L368.8,268.17 L370.4,267.06 L372,266.13 L373.6,265.36 L375.2,264.77 L376.8,264.34 L378.4,264.08 L380,264 L381.6,264.08 L383.2,264.34 L384.8,264.77 L386.4,265.36 L388,266.13 L389.6,267.06 L391.2,268.17 L392.8,269.44 L394.4,270.89 L396,272.5 L397.6,274.29 L399.2,276.24 L400.8,278.37 L402.4,280.66 L404,283.13 L405.6,285.76 L407.2,288.57 L408.8,291.54 L410.4,294.69 L412,298"/><text class="tn" x="380" y="30" text-anchor="middle">抛物线</text><text class="ts" x="380" y="330" text-anchor="middle">平行于一条素线</text><path class="s0" d="M504,152 L530,56 L556,152 Z"/><ellipse class="s1" cx="530" cy="152" rx="26" ry="8"/><line class="s3" x1="530" y1="166" x2="530" y2="42"/><line class="s0" x1="510" y1="166" x2="510" y2="78"/><path class="s0" d="M524.88,304.05 L523.54,303.21 L522.19,302.24 L520.85,301.2 L519.5,300.08 L518.16,298.91 L516.82,297.7 L515.47,296.46 L514.13,295.19 L512.78,293.9 L511.44,292.59 L510.1,291.27 L508.75,289.94 L507.41,288.59 L506.06,287.24 L504.72,285.88 L503.38,284.51 L502.03,283.14 L500.69,281.76 L499.34,280.38 L498,278.99"/><path class="s0" d="M535.12,304.05 L536.46,303.21 L537.81,302.24 L539.15,301.2 L540.5,300.08 L541.84,298.91 L543.18,297.7 L544.53,296.46 L545.87,295.19 L547.22,293.9 L548.56,292.59 L549.9,291.27 L551.25,289.94 L552.59,288.59 L553.94,287.24 L555.28,285.88 L556.62,284.51 L557.97,283.14 L559.31,281.76 L560.66,280.38 L562,278.99"/><text class="tn" x="530" y="30" text-anchor="middle">双曲线</text><text class="ts" x="530" y="330" text-anchor="middle">平行于轴线</text><path class="s0" d="M654,152 L680,56 L706,152 Z"/><ellipse class="s1" cx="680" cy="152" rx="26" ry="8"/><line class="s3" x1="680" y1="166" x2="680" y2="42"/><line class="s0" x1="648" y1="158" x2="684" y2="62"/><path class="s0" d="M650,304 L680,274 L710,304 Z"/><text class="tn" x="680" y="30" text-anchor="middle">三角形</text><text class="ts" x="680" y="330" text-anchor="middle">过锥顶</text></svg>

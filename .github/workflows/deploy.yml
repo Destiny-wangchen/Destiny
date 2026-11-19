@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # 归档要按每篇文章最后一次提交的日期排序，浅克隆拿不到历史
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4

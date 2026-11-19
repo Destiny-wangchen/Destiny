@@ -16,8 +16,12 @@ const filtered = computed(() =>
 )
 
 const groups = computed(() => {
+  // 归档只看首次发布日的时间线：发布日期倒序，同一天再比更新时间，置顶在这里不插队
+  const list = [...filtered.value].sort(
+    (a, b) => b.date.localeCompare(a.date) || b.updated.localeCompare(a.updated)
+  )
   const map = new Map<string, PostMeta[]>()
-  for (const p of filtered.value) {
+  for (const p of list) {
     const year = p.date.slice(0, 4)
     if (!map.has(year)) map.set(year, [])
     map.get(year)!.push(p)
@@ -52,6 +56,7 @@ function toggleTag(tag: string) {
       <li v-for="p in items" :key="p.url" class="archive-item">
         <span class="date">{{ simplifyDate(p.date) }}</span>
         <a class="title" :href="withBase(p.url)">{{ p.title }}</a>
+        <span v-if="p.updated !== p.date" class="updated-badge" :title="`更新于 ${p.updated}`">更新</span>
         <span v-for="t in p.tags" :key="t" class="tag">#{{ t }}</span>
       </li>
     </ul>
@@ -123,6 +128,14 @@ function toggleTag(tag: string) {
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-thickness: 1px;
+}
+.updated-badge {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 0.6875rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
 }
 .empty {
   color: var(--muted);

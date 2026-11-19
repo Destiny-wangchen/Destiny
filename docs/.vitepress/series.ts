@@ -69,8 +69,22 @@ export const seriesList: SeriesDef[] = [
     ]
   },
   {
+    name: '工程制图',
+    desc: '工图 C 考点拆解：7 章讲透投影、截交、相贯、读图、剖视与尺寸标注，插图按国标重绘。',
+    link: '/dbook/',
+    items: [
+      { title: '第 1 章 · 这门课到底考什么', link: '/dbook/01-what.html', order: 1 },
+      { title: '第 2 章 · 点、直线、平面的投影', link: '/dbook/02-projection.html', order: 2 },
+      { title: '第 3 章 · 截交线', link: '/dbook/03-cut.html', order: 3 },
+      { title: '第 4 章 · 相贯线', link: '/dbook/04-cross.html', order: 4 },
+      { title: '第 5 章 · 读图与补第三视图', link: '/dbook/05-read.html', order: 5 },
+      { title: '第 6 章 · 剖视图与断面图', link: '/dbook/06-section.html', order: 6 },
+      { title: '第 7 章 · 尺寸标注', link: '/dbook/07-dimension.html', order: 7 }
+    ]
+  },
+  {
     name: '推理小说诡计',
-    desc: '按"骗什么"编排的诡计谱系：密室、建筑、时间、身份、叙述、破壁，8 篇梳理近两百年的手法与脑洞。',
+    desc: '按"骗什么"编排的诡计谱系：密室、建筑、时间、身份、叙述、破壁，8 章梳理近两百年的手法与脑洞。',
     link: '/mbook/',
     items: [
       { title: '导论 · 诡计的解剖学', link: '/mbook/00-preface.html', order: 1 },
@@ -80,13 +94,13 @@ export const seriesList: SeriesDef[] = [
       { title: '第 4 章 · 骗语言', link: '/mbook/04-language.html', order: 5 },
       { title: '第 5 章 · 骗期待', link: '/mbook/05-expectation.html', order: 6 },
       { title: '第 6 章 · 舞台与模式', link: '/mbook/06-stage.html', order: 7 },
-      { title: '第 7 章 · 索引、对照表与阅读路线', link: '/mbook/07-appendix.html', order: 8 }
+      { title: '第 7 章 · 索引、对照表与核实记录', link: '/mbook/07-appendix.html', order: 8 }
     ]
   },
   {
     name: '网站开发',
     desc: '建站与写作：Markdown 写作指南与个人博客搭建实录。',
-    link: '/posts/build-this-blog.html',
+    link: '/wbook/',
     items: [
       { title: 'Markdown 写作指南：10 分钟学会，够用一辈子', link: '/posts/markdown-syntax.html', order: 1 },
       { title: '手把手教你搭建个人博客', link: '/posts/build-this-blog.html', order: 2 }

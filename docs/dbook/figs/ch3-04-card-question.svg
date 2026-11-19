@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="330" viewBox="0 0 700 330" role="img">
+<defs>
+<style>
+.s0{fill:none;stroke:#141414;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.s1{fill:none;stroke:#141414;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+.s2{fill:none;stroke:#141414;stroke-width:1.15;stroke-dasharray:8 4.5;stroke-linecap:butt}
+.s3{fill:none;stroke:#141414;stroke-width:1.05;stroke-dasharray:16 3 3 3;stroke-linecap:butt}
+.g0{fill:none;stroke:#9a9a9a;stroke-width:.95;stroke-dasharray:5 4}
+.g1{fill:none;stroke:#9a9a9a;stroke-width:.95}
+.ht{fill:url(#hatch);stroke:#141414;stroke-width:1.15}
+.t{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:21px;fill:#141414}
+.tb{font-family:Georgia,'Times New Roman',serif;font-size:19px;fill:#141414}
+.tn{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:15.5px;fill:#141414}
+.ts{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:13.5px;fill:#141414}
+</style>
+<marker id="ar" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+  <path d="M0,1.4 L10,5 L0,8.6 z" fill="#141414"/>
+</marker>
+<pattern id="hatch" width="5.2" height="5.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="5.2" stroke="#141414" stroke-width="0.85"/>
+</pattern>
+</defs><path class="s0" d="M130,240 L164.94,181.76 L236.17,196.96 L262,240 Z"/><line class="s0" x1="164.94" y1="181.76" x2="236.17" y2="196.96"/><path class="s0" d="M560,240 L428,240 L462.94,181.76 L453.83,196.96 L534.17,196.96 L525.06,181.76 Z"/><line class="s0" x1="560" y1="240" x2="534.17" y2="196.96"/><line class="s0" x1="525.06" y1="181.76" x2="462.94" y2="181.76"/><circle class="s1" cx="164.94" cy="181.76" r="1.9"/><line class="s1" x1="164.94" y1="181.76" x2="152.94" y2="178.76"/><text class="t" x="148.94" y="177.76" text-anchor="middle">1′</text><circle class="s1" cx="236.17" cy="196.96" r="1.9"/><line class="s1" x1="236.17" y1="196.96" x2="254.17" y2="190.96"/><text class="t" x="260.17" y="188.96" text-anchor="middle">2′(3′)</text><circle class="s1" cx="164.94" cy="181.76" r="1.9"/><line class="s1" x1="164.94" y1="181.76" x2="151.44" y2="193.76"/><text class="t" x="146.94" y="197.76" text-anchor="middle">4′</text><circle class="s1" cx="534.17" cy="196.96" r="1.9"/><line class="s1" x1="534.17" y1="196.96" x2="541.67" y2="193.96"/><text class="t" x="544.17" y="192.96" text-anchor="middle">2″</text><circle class="s1" cx="453.83" cy="196.96" r="1.9"/><line class="s1" x1="453.83" y1="196.96" x2="443.33" y2="193.96"/><text class="t" x="439.83" y="192.96" text-anchor="middle">3″</text><text class="tn" x="196" y="268" text-anchor="middle">主视图</text><text class="tn" x="494" y="268" text-anchor="middle">左视图</text><text class="tn" x="60" y="40" text-anchor="start">四棱锥被正垂面截切，已知主视图和左视图，求俯视图（保留作图过程）</text></svg>

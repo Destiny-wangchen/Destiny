@@ -42,30 +42,25 @@ const current = computed(
   () => bookItems.find((p) => p.url === currentUrl.value) ?? postItems.find((p) => p.url === currentUrl.value)
 )
 
-// 兄弟序列：书籍按 seriesOrder 排（目录页 0 排最前）；
-// 文章有同名系列按系列排，否则落在全站时间轴上（上一篇 = 更早的一篇）
+// 同一系列可能同时包含目录页/章节（bookPages）与普通文章（posts），如「网站开发」「C语言」。
+// 统一成一条链：目录页（seriesOrder 0）排最前，其余按各自 seriesOrder 排。
 const siblings = computed<NavItem[]>(() => {
   const c = current.value
   if (!c) return []
-  if (c.isBook) {
-    return bookItems.filter((p) => p.series === c.series).sort((a, b) => a.seriesOrder - b.seriesOrder)
+  const same = (p: NavItem) => p.series !== '' && p.series === c.series
+  const cover = bookItems.find((p) => same(p) && p.seriesOrder === 0)
+  const chapters = [
+    ...bookItems.filter((p) => same(p) && p.seriesOrder > 0),
+    ...postItems.filter(same)
+  ].sort((a, b) => a.seriesOrder - b.seriesOrder)
+  // 不成系列：落在全站时间轴上（上一篇 = 更早的一篇）
+  if (!cover && chapters.length <= 1) {
+    return postItems.slice().sort((a, b) => a.date.localeCompare(b.date))
   }
-  const group = postItems.filter((p) => p.series !== '' && p.series === c.series)
-  return group.length > 1
-    ? group.slice().sort((a, b) => a.seriesOrder - b.seriesOrder)
-    : postItems.slice().sort((a, b) => a.date.localeCompare(b.date))
+  return [...(cover ? [cover] : []), ...chapters]
 })
 
-const isBookChain = computed(() => !!current.value?.isBook)
-
-// 编号集合：书籍链去掉目录页（seriesOrder 0），章节才是 1/8、2/8
-const chapters = computed<NavItem[]>(() =>
-  isBookChain.value ? siblings.value.filter((p) => p.seriesOrder > 0) : siblings.value
-)
-
-const numbered = computed(
-  () => isBookChain.value || (!!current.value?.series && siblings.value.length > 1)
-)
+const numbered = computed(() => !!current.value?.series && siblings.value.length > 1)
 
 const index = computed(() => (current.value ? siblings.value.indexOf(current.value) : -1))
 const prev = computed(() => (index.value > 0 ? siblings.value[index.value - 1] : null))
@@ -73,17 +68,22 @@ const next = computed(() =>
   index.value >= 0 && index.value < siblings.value.length - 1 ? siblings.value[index.value + 1] : null
 )
 
+// 目录页 = 书籍封面（isBook 且 seriesOrder 0）。
+// 普通文章没有 series 字段时 seriesOrder 也是 0，不能误判成目录页。
+const isCover = (item: NavItem) => item.isBook && item.seriesOrder === 0
+
 function posOf(item: NavItem) {
   if (!numbered.value) return ''
-  if (isBookChain.value && item.seriesOrder === 0) return ''
-  const i = chapters.value.indexOf(item)
-  return i >= 0 ? `（${i + 1}/${chapters.value.length}）` : ''
+  if (isCover(item)) return '' // 目录页不占编号
+  const rest = siblings.value.filter((p) => !isCover(p))
+  const i = rest.indexOf(item)
+  return i >= 0 ? `（${i + 1}/${rest.length}）` : ''
 }
 
 const prevLabel = computed(() => {
   if (!prev.value) return ''
   // 章节链的上家是目录页时，文案换成「目录」
-  if (isBookChain.value && prev.value.seriesOrder === 0) return '← 目录'
+  if (isCover(prev.value)) return '← 目录'
   return `← 上一篇${posOf(prev.value)}`
 })
 const nextLabel = computed(() => (next.value ? `下一篇${posOf(next.value)} →` : ''))

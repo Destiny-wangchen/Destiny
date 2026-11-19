@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="490" viewBox="0 0 760 490" role="img">
+<defs>
+<style>
+.s0{fill:none;stroke:#141414;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.s1{fill:none;stroke:#141414;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+.s2{fill:none;stroke:#141414;stroke-width:1.15;stroke-dasharray:8 4.5;stroke-linecap:butt}
+.s3{fill:none;stroke:#141414;stroke-width:1.05;stroke-dasharray:16 3 3 3;stroke-linecap:butt}
+.g0{fill:none;stroke:#9a9a9a;stroke-width:.95;stroke-dasharray:5 4}
+.g1{fill:none;stroke:#9a9a9a;stroke-width:.95}
+.ht{fill:url(#hatch);stroke:#141414;stroke-width:1.15}
+.t{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:21px;fill:#141414}
+.tb{font-family:Georgia,'Times New Roman',serif;font-size:19px;fill:#141414}
+.tn{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:15.5px;fill:#141414}
+.ts{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:13.5px;fill:#141414}
+</style>
+<marker id="ar" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+  <path d="M0,1.4 L10,5 L0,8.6 z" fill="#141414"/>
+</marker>
+<pattern id="hatch" width="5.2" height="5.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="5.2" stroke="#141414" stroke-width="0.85"/>
+</pattern>
+</defs><path class="s0" d="M150,226 L184.94,167.76 L256.17,182.96 L282,226 Z"/><line class="s0" x1="184.94" y1="167.76" x2="256.17" y2="182.96"/><path class="s0" d="M150,436 L282,436 L282,304 L150,304 Z"/><line class="s0" x1="150" y1="436" x2="184.94" y2="401.06"/><line class="s0" x1="282" y1="436" x2="256.17" y2="410.17"/><line class="s0" x1="282" y1="304" x2="256.17" y2="329.83"/><line class="s0" x1="150" y1="304" x2="184.94" y2="338.94"/><path class="s0" d="M184.94,401.06 L256.17,410.17 L256.17,329.83 L184.94,338.94 Z"/><path class="s0" d="M630,226 L498,226 L532.94,167.76 L523.83,182.96 L604.17,182.96 L595.06,167.76 Z"/><line class="s0" x1="630" y1="226" x2="604.17" y2="182.96"/><line class="s0" x1="595.06" y1="167.76" x2="532.94" y2="167.76"/><circle class="s1" cx="184.94" cy="167.76" r="1.9"/><line class="s1" x1="184.94" y1="167.76" x2="172.94" y2="164.76"/><text class="t" x="168.94" y="163.76" text-anchor="middle">1′</text><circle class="s1" cx="256.17" cy="182.96" r="1.9"/><line class="s1" x1="256.17" y1="182.96" x2="275.67" y2="176.96"/><text class="t" x="282.17" y="174.96" text-anchor="middle">2′(3′)</text><circle class="s1" cx="184.94" cy="167.76" r="1.9"/><line class="s1" x1="184.94" y1="167.76" x2="169.94" y2="179.76"/><text class="t" x="164.94" y="183.76" text-anchor="middle">4′</text><circle class="s1" cx="184.94" cy="401.06" r="1.9"/><line class="s1" x1="184.94" y1="401.06" x2="178.94" y2="396.56"/><text class="t" x="176.94" y="395.06" text-anchor="middle">1</text><circle class="s1" cx="256.17" cy="410.17" r="1.9"/><line class="s1" x1="256.17" y1="410.17" x2="265.17" y2="407.17"/><text class="t" x="268.17" y="406.17" text-anchor="middle">2</text><circle class="s1" cx="256.17" cy="329.83" r="1.9"/><line class="s1" x1="256.17" y1="329.83" x2="265.17" y2="338.83"/><text class="t" x="268.17" y="341.83" text-anchor="middle">3</text><circle class="s1" cx="184.94" cy="338.94" r="1.9"/><line class="s1" x1="184.94" y1="338.94" x2="177.44" y2="349.44"/><text class="t" x="174.94" y="352.94" text-anchor="middle">4</text><circle class="s1" cx="604.17" cy="182.96" r="1.9"/><line class="s1" x1="604.17" y1="182.96" x2="611.67" y2="179.96"/><text class="t" x="614.17" y="178.96" text-anchor="middle">2″</text><circle class="s1" cx="523.83" cy="182.96" r="1.9"/><line class="s1" x1="523.83" y1="182.96" x2="514.83" y2="179.96"/><text class="t" x="511.83" y="178.96" text-anchor="middle">3″</text><text class="tn" x="216" y="252" text-anchor="middle">主视图</text><text class="tn" x="216" y="458" text-anchor="middle">俯视图</text><text class="tn" x="564" y="252" text-anchor="middle">左视图</text><text class="tn" x="60" y="36" text-anchor="start">截平面为正垂面：V 面投影为直线，先求四点，再按投影规律连成四边形</text></svg>

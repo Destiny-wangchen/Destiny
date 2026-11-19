@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="560" viewBox="0 0 720 560" role="img">
+<defs>
+<style>
+.s0{fill:none;stroke:#141414;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.s1{fill:none;stroke:#141414;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+.s2{fill:none;stroke:#141414;stroke-width:1.15;stroke-dasharray:8 4.5;stroke-linecap:butt}
+.s3{fill:none;stroke:#141414;stroke-width:1.05;stroke-dasharray:16 3 3 3;stroke-linecap:butt}
+.g0{fill:none;stroke:#9a9a9a;stroke-width:.95;stroke-dasharray:5 4}
+.g1{fill:none;stroke:#9a9a9a;stroke-width:.95}
+.ht{fill:url(#hatch);stroke:#141414;stroke-width:1.15}
+.t{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:21px;fill:#141414}
+.tb{font-family:Georgia,'Times New Roman',serif;font-size:19px;fill:#141414}
+.tn{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:15.5px;fill:#141414}
+.ts{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:13.5px;fill:#141414}
+</style>
+<marker id="ar" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+  <path d="M0,1.4 L10,5 L0,8.6 z" fill="#141414"/>
+</marker>
+<pattern id="hatch" width="5.2" height="5.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="5.2" stroke="#141414" stroke-width="0.85"/>
+</pattern>
+</defs><path class="s0" d="M90,280 L210,280 L210,120 L90,120 Z"/><line class="s0" x1="210" y1="164" x2="320" y2="164"/><line class="s0" x1="210" y1="236" x2="320" y2="236"/><line class="s0" x1="320" y1="236" x2="320" y2="164"/><line class="s3" x1="70" y1="200" x2="330" y2="200"/><line class="s3" x1="150" y1="292" x2="150" y2="108"/><path class="s0" d="M210,164 L209.99,164.01 L209.97,164.05 L209.94,164.1 L209.89,164.18 L209.83,164.28 L209.76,164.41 L209.67,164.56 L209.57,164.73 L209.45,164.92 L209.32,165.14 L209.18,165.39 L209.02,165.66 L208.85,165.95 L208.66,166.28 L208.46,166.63 L208.25,167.01 L208.02,167.41 L207.77,167.85 L207.51,168.32 L207.24,168.82 L206.95,169.36 L206.64,169.93 L206.32,170.55 L205.98,171.2 L205.62,171.9 L205.25,172.64 L204.86,173.44 L204.45,174.29 L204.03,175.21 L203.58,176.19 L203.12,177.25 L202.64,178.4 L202.13,179.66 L201.61,181.04 L201.07,182.57 L200.5,184.31 L199.91,186.32 L199.3,188.76 L198.66,192 L198,200 L198,200 L198.66,208 L199.3,211.24 L199.91,213.68 L200.5,215.69 L201.07,217.43 L201.61,218.96 L202.13,220.34 L202.64,221.6 L203.12,222.75 L203.58,223.81 L204.03,224.79 L204.45,225.71 L204.86,226.56 L205.25,227.36 L205.62,228.1 L205.98,228.8 L206.32,229.45 L206.64,230.07 L206.95,230.64 L207.24,231.18 L207.51,231.68 L207.77,232.15 L208.02,232.59 L208.25,232.99 L208.46,233.37 L208.66,233.72 L208.85,234.05 L209.02,234.34 L209.18,234.61 L209.32,234.86 L209.45,235.08 L209.57,235.27 L209.67,235.44 L209.76,235.59 L209.83,235.72 L209.89,235.82 L209.94,235.9 L209.97,235.95 L209.99,235.99 L210,236"/><text class="tn" x="154" y="306" text-anchor="middle">主视图</text><circle class="s0" cx="150" cy="440" r="60"/><line class="s0" x1="198" y1="476" x2="320" y2="476"/><line class="s0" x1="198" y1="404" x2="320" y2="404"/><line class="s0" x1="320" y1="476" x2="320" y2="404"/><path class="s0" d="M197.98,476.03 A60,60 0 0 0 197.98,403.97"/><line class="s3" x1="150" y1="516" x2="150" y2="364"/><line class="s3" x1="74" y1="440" x2="330" y2="440"/><text class="tn" x="154" y="524" text-anchor="middle">俯视图</text><text class="tn" x="380" y="44" text-anchor="start">相贯线总是向小圆柱一侧凹进去</text><text class="tn" x="380" y="68" text-anchor="start">“项链”戴在小头上</text><line class="s1" x1="200.4" y1="200" x2="372" y2="150"/><text class="ts" x="378" y="154" text-anchor="start">相贯线</text><text class="ts" x="380" y="110" text-anchor="start">俯视图中相贯线落在</text><text class="ts" x="380" y="128" text-anchor="start">大圆柱的圆上，不必另画</text></svg>

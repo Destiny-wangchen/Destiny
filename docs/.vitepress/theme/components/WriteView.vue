@@ -303,6 +303,7 @@ interface ManagedVault {
   path: string
   sha: string
   title: string
+  date: string
   kind: 'plain' | 'pw' | 'egg'
 }
 
@@ -366,8 +367,6 @@ async function loadManage() {
     )
     // 目录列表不带文件内容，逐个取回解析 frontmatter 里的标题和系列
     managePosts.value = await Promise.all(files.map((f) => fetchPostMeta(f.name, f.path, f.sha)))
-    // 默认全部收起，刷新后不保留旧的展开状态
-    expandedGroups.value = []
 
     const vaultRes = await fetch(`https://api.github.com/repos/${REPO}/contents/private-vault?ref=main`)
     if (!vaultRes.ok) throw new Error(`读取密文文章失败（GitHub ${vaultRes.status}）`)
@@ -382,10 +381,11 @@ async function loadManage() {
           path: f.path,
           sha: f.sha,
           title: entry.payload?.title ?? entry.id ?? f.name,
+          date: String(entry.date ?? ''),
           kind: entry.plain ? 'plain' : entry.egg ? 'egg' : 'pw'
         })
       } catch {
-        list.push({ name: f.name, path: f.path, sha: f.sha, title: f.name, kind: 'pw' })
+        list.push({ name: f.name, path: f.path, sha: f.sha, title: f.name, date: '', kind: 'pw' })
       }
     }
     manageVault.value = list
@@ -532,6 +532,74 @@ async function removeVault(f: ManagedVault) {
   }
 }
 
+// —— 改发布日期：只动日期字段，标题正文原样保留 ——
+const dateEditPath = ref('')
+const dateEditValue = ref('')
+const dateEditSaving = ref(false)
+
+function startDateEdit(path: string, current: string) {
+  dateEditPath.value = path
+  dateEditValue.value = current
+}
+
+function cancelDateEdit() {
+  dateEditPath.value = ''
+  dateEditValue.value = ''
+}
+
+/** 只替换 frontmatter 里的 date 行，其余内容一个字节不动 */
+function setFrontmatterDate(md: string, date: string) {
+  const m = md.match(/^(---\r?\n)([\s\S]*?)(\r?\n---)/)
+  if (!m) return md
+  const fm = /^date:[ \t]*.*$/m.test(m[2])
+    ? m[2].replace(/^date:[ \t]*.*$/m, `date: ${date}`)
+    : `${m[2]}\ndate: ${date}`
+  return m[1] + fm + m[3] + md.slice(m[0].length)
+}
+
+async function savePostDate(f: ManagedPost) {
+  const d = dateEditValue.value
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+    manageErr.value = '请选择合法的日期'
+    return
+  }
+  manageErr.value = ''
+  dateEditSaving.value = true
+  try {
+    const md = await fetchRaw(f.path)
+    await ghPut(f.path, setFrontmatterDate(md, d), `date: ${f.name} 发布日期改为 ${d}`)
+    manageMsg.value = `「${f.title}」发布日期已改为 ${d}，1-2 分钟后归档生效。`
+    cancelDateEdit()
+    await loadManage()
+  } catch (e) {
+    manageErr.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    dateEditSaving.value = false
+  }
+}
+
+async function saveVaultDate(f: ManagedVault) {
+  const d = dateEditValue.value
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+    manageErr.value = '请选择合法的日期'
+    return
+  }
+  manageErr.value = ''
+  dateEditSaving.value = true
+  try {
+    const entry = JSON.parse(await fetchRaw(f.path))
+    entry.date = d
+    await ghPut(f.path, JSON.stringify(entry, null, 2), `date(密文): ${f.name} 发布日期改为 ${d}`)
+    manageMsg.value = `「${f.title}」发布日期已改为 ${d}。`
+    cancelDateEdit()
+    await loadManage()
+  } catch (e) {
+    manageErr.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    dateEditSaving.value = false
+  }
+}
+
 // —— 项目管理 ——
 interface ProjItem {
   name: string
@@ -544,9 +612,12 @@ interface ProjItem {
 
 const tab = ref<'post' | 'manage' | 'projects'>('post')
 
-// 进入「管文章」标签时自动读取仓库里的文章列表
+// 进入「管文章」标签时自动读取仓库里的文章列表，并回到全部收起
 watch(tab, (t) => {
-  if (t === 'manage') loadManage()
+  if (t === 'manage') {
+    expandedGroups.value = []
+    loadManage()
+  }
 })
 const projects = ref<ProjItem[]>([])
 const projLoading = ref(false)
@@ -988,11 +1059,22 @@ async function confirmDel() {
         <span class="group-count">{{ g.posts.length }} 篇 {{ isExpanded(g.key) ? '▾' : '▸' }}</span>
       </button>
       <div v-if="isExpanded(g.key)" class="group-body">
-        <div v-for="f in g.posts" :key="f.path" class="manage-row">
-          <button class="manage-title" type="button" @click="editPost(f)">{{ f.title }}</button>
-          <span class="manage-actions">
-            <button class="text-btn danger" type="button" @click="removePost(f)">删除</button>
-          </span>
+        <div v-for="f in g.posts" :key="f.path" class="manage-item">
+          <div class="manage-row">
+            <button class="manage-title" type="button" @click="editPost(f)">{{ f.title }}</button>
+            <span class="manage-actions">
+              <span class="manage-date">{{ f.date }}</span>
+              <button class="text-btn" type="button" @click="startDateEdit(f.path, f.date)">改日期</button>
+              <button class="text-btn danger" type="button" @click="removePost(f)">删除</button>
+            </span>
+          </div>
+          <div v-if="dateEditPath === f.path" class="date-edit">
+            <input v-model="dateEditValue" class="input" type="date" />
+            <button class="btn ghost" type="button" :disabled="dateEditSaving" @click="savePostDate(f)">
+              {{ dateEditSaving ? '保存中…' : '保存' }}
+            </button>
+            <button class="text-btn" type="button" @click="cancelDateEdit">取消</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1006,20 +1088,31 @@ async function confirmDel() {
         </span>
       </button>
       <div v-if="isExpanded(VAULT_GROUP)" class="group-body">
-        <div v-for="f in vaultSorted" :key="f.path" class="manage-row">
-          <button
-            class="manage-title"
-            type="button"
-            :disabled="f.kind === 'pw'"
-            :title="f.kind === 'pw' ? '密码加密的文章无法在此编辑，可删除后重新发布' : ''"
-            @click="editVault(f)"
-          >
-            {{ f.title }}
-            <em class="manage-kind">{{ f.kind === 'plain' ? '免密' : f.kind === 'egg' ? '彩蛋' : '密码' }}</em>
-          </button>
-          <span class="manage-actions">
-            <button class="text-btn danger" type="button" @click="removeVault(f)">删除</button>
-          </span>
+        <div v-for="f in vaultSorted" :key="f.path" class="manage-item">
+          <div class="manage-row">
+            <button
+              class="manage-title"
+              type="button"
+              :disabled="f.kind === 'pw'"
+              :title="f.kind === 'pw' ? '密码加密的文章无法在此编辑，可删除后重新发布' : ''"
+              @click="editVault(f)"
+            >
+              {{ f.title }}
+              <em class="manage-kind">{{ f.kind === 'plain' ? '免密' : f.kind === 'egg' ? '彩蛋' : '密码' }}</em>
+            </button>
+            <span class="manage-actions">
+              <span class="manage-date">{{ f.date }}</span>
+              <button class="text-btn" type="button" @click="startDateEdit(f.path, f.date)">改日期</button>
+              <button class="text-btn danger" type="button" @click="removeVault(f)">删除</button>
+            </span>
+          </div>
+          <div v-if="dateEditPath === f.path" class="date-edit">
+            <input v-model="dateEditValue" class="input" type="date" />
+            <button class="btn ghost" type="button" :disabled="dateEditSaving" @click="saveVaultDate(f)">
+              {{ dateEditSaving ? '保存中…' : '保存' }}
+            </button>
+            <button class="text-btn" type="button" @click="cancelDateEdit">取消</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1344,6 +1437,10 @@ async function confirmDel() {
   gap: 0.35rem;
   padding: 0.5rem;
 }
+.manage-item {
+  display: grid;
+  gap: 0.35rem;
+}
 .manage-row {
   display: flex;
   align-items: center;
@@ -1353,6 +1450,24 @@ async function confirmDel() {
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 0.875rem;
+}
+.manage-date {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.date-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.6rem;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+}
+.date-edit .input {
+  width: auto;
+  min-width: 9.5rem;
 }
 .manage-title {
   background: none;

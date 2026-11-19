@@ -34,12 +34,15 @@ const route = useRoute()
 const backHref = ref(withBase('/'))
 const backLabel = ref('← 返回')
 
-// 当前页若是书籍章节，返回其所属书的目录页（seriesOrder 0）；否则 null
+// 当前页若属于某系列，返回该系列的目录页（seriesOrder 0）；否则 null。
+// 书籍章节直接查 bookPages；普通文章（如「网站开发」两篇）用 frontmatter 里的 series。
 function findChapterCover() {
   const rel = page.value.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '.html')
   const cur = bookPages.find((p) => p.url === `/${rel}`)
-  if (!cur || cur.seriesOrder === 0 || !cur.series) return null
-  return bookPages.find((p) => p.series === cur.series && p.seriesOrder === 0) ?? null
+  if (cur && cur.seriesOrder === 0) return null // 目录页自身就是入口
+  const name = cur ? cur.series : String(frontmatter.value.series ?? '')
+  if (!name) return null
+  return bookPages.find((p) => p.series === name && p.seriesOrder === 0) ?? null
 }
 
 function resolveBack() {

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="330" viewBox="0 0 760 330" role="img">
+<defs>
+<style>
+.s0{fill:none;stroke:#141414;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.s1{fill:none;stroke:#141414;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+.s2{fill:none;stroke:#141414;stroke-width:1.15;stroke-dasharray:8 4.5;stroke-linecap:butt}
+.s3{fill:none;stroke:#141414;stroke-width:1.05;stroke-dasharray:16 3 3 3;stroke-linecap:butt}
+.g0{fill:none;stroke:#9a9a9a;stroke-width:.95;stroke-dasharray:5 4}
+.g1{fill:none;stroke:#9a9a9a;stroke-width:.95}
+.ht{fill:url(#hatch);stroke:#141414;stroke-width:1.15}
+.t{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:21px;fill:#141414}
+.tb{font-family:Georgia,'Times New Roman',serif;font-size:19px;fill:#141414}
+.tn{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:15.5px;fill:#141414}
+.ts{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:13.5px;fill:#141414}
+</style>
+<marker id="ar" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+  <path d="M0,1.4 L10,5 L0,8.6 z" fill="#141414"/>
+</marker>
+<pattern id="hatch" width="5.2" height="5.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="5.2" stroke="#141414" stroke-width="0.85"/>
+</pattern>
+</defs><line class="s0" x1="86" y1="190" x2="86" y2="80"/><line class="s0" x1="134" y1="190" x2="134" y2="80"/><line class="s0" x1="86" y1="190" x2="134" y2="190"/><line class="s0" x1="86" y1="80" x2="134" y2="80"/><line class="s3" x1="110" y1="206" x2="110" y2="66"/><line class="s0" x1="86" y1="126" x2="134" y2="126"/><text class="ts" x="144" y="120" text-anchor="start">截平面</text><text class="ts" x="144" y="136" text-anchor="start">（垂直于投影面）</text><circle class="s0" cx="110" cy="262" r="22"/><text class="tn" x="110" y="40" text-anchor="middle">① 垂直于轴线</text><text class="tb" x="142" y="266" text-anchor="start">圆</text><line class="s1" x1="134" y1="258" x2="140" y2="250"/><text class="tn" x="110" y="308" text-anchor="middle">截交线形状：圆</text><line class="s0" x1="346" y1="190" x2="346" y2="80"/><line class="s0" x1="394" y1="190" x2="394" y2="80"/><line class="s0" x1="346" y1="190" x2="394" y2="190"/><line class="s0" x1="346" y1="80" x2="394" y2="80"/><line class="s3" x1="370" y1="206" x2="370" y2="66"/><line class="s0" x1="346" y1="150" x2="394" y2="106"/><text class="ts" x="404" y="112" text-anchor="start">截平面倾斜</text><ellipse class="s0" cx="370" cy="262" rx="32" ry="18"/><text class="tn" x="370" y="40" text-anchor="middle">② 倾斜于轴线</text><text class="tb" x="410" y="266" text-anchor="start">椭圆</text><text class="tn" x="370" y="308" text-anchor="middle">截交线形状：椭圆</text><line class="s0" x1="606" y1="190" x2="606" y2="80"/><line class="s0" x1="654" y1="190" x2="654" y2="80"/><line class="s0" x1="606" y1="190" x2="654" y2="190"/><line class="s0" x1="606" y1="80" x2="654" y2="80"/><line class="s3" x1="630" y1="206" x2="630" y2="66"/><line class="s0" x1="622" y1="100" x2="622" y2="190"/><line class="s0" x1="638" y1="100" x2="638" y2="190"/><text class="ts" x="664" y="140" text-anchor="start">截平面平行轴线</text><path class="s0" d="M608,242 L652,242 L652,282 L608,282 Z"/><text class="tn" x="630" y="40" text-anchor="middle">③ 平行于轴线</text><text class="tb" x="660" y="266" text-anchor="start">矩形</text><text class="tn" x="630" y="308" text-anchor="middle">截交线形状：矩形</text></svg>

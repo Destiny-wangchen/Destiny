@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="340" viewBox="0 0 720 340" role="img">
+<defs>
+<style>
+.s0{fill:none;stroke:#141414;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.s1{fill:none;stroke:#141414;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+.s2{fill:none;stroke:#141414;stroke-width:1.15;stroke-dasharray:8 4.5;stroke-linecap:butt}
+.s3{fill:none;stroke:#141414;stroke-width:1.05;stroke-dasharray:16 3 3 3;stroke-linecap:butt}
+.g0{fill:none;stroke:#9a9a9a;stroke-width:.95;stroke-dasharray:5 4}
+.g1{fill:none;stroke:#9a9a9a;stroke-width:.95}
+.ht{fill:url(#hatch);stroke:#141414;stroke-width:1.15}
+.t{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:21px;fill:#141414}
+.tb{font-family:Georgia,'Times New Roman',serif;font-size:19px;fill:#141414}
+.tn{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:15.5px;fill:#141414}
+.ts{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:13.5px;fill:#141414}
+</style>
+<marker id="ar" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+  <path d="M0,1.4 L10,5 L0,8.6 z" fill="#141414"/>
+</marker>
+<pattern id="hatch" width="5.2" height="5.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="5.2" stroke="#141414" stroke-width="0.85"/>
+</pattern>
+</defs><line class="s3" x1="80" y1="250" x2="350" y2="250"/><text class="t" x="72" y="254" text-anchor="end">X</text><text class="t" x="356" y="254" text-anchor="start">O</text><line class="s0" x1="120" y1="200" x2="293.2" y2="100"/><circle class="s1" cx="120" cy="200" r="1.9"/><line class="s1" x1="120" y1="200" x2="111" y2="195.5"/><text class="t" x="108" y="194" text-anchor="middle">a′</text><circle class="s1" cx="293.2" cy="100" r="1.9"/><line class="s1" x1="293.2" y1="100" x2="300.7" y2="95.5"/><text class="t" x="303.2" y="94" text-anchor="middle">b′</text><line class="g0" x1="120" y1="300" x2="120" y2="200"/><line class="g0" x1="293.2" y1="300" x2="293.2" y2="100"/><line class="s0" x1="120" y1="300" x2="293.2" y2="300"/><circle class="s1" cx="120" cy="300" r="1.9"/><line class="s1" x1="120" y1="300" x2="111" y2="310.5"/><text class="t" x="108" y="314" text-anchor="middle">a</text><circle class="s1" cx="293.2" cy="300" r="1.9"/><line class="s1" x1="293.2" y1="300" x2="300.7" y2="310.5"/><text class="t" x="303.2" y="314" text-anchor="middle">b</text><line class="s0" x1="410" y1="300" x2="583.2" y2="300"/><line class="s0" x1="583.2" y1="300" x2="583.2" y2="200"/><line class="s0" x1="583.2" y1="200" x2="410" y2="300"/><line class="s1" x1="571.2" y1="300" x2="571.2" y2="288"/><line class="s1" x1="571.2" y1="288" x2="583.2" y2="288"/><path class="s1" d="M456,300 A46,46 0 0 0 449.84,277"/><text class="t" x="466" y="286" text-anchor="middle">α</text><text class="tn" x="496.6" y="322" text-anchor="middle">水平投影长 ab</text><text class="t" x="593.2" y="250" text-anchor="start">Δz</text><text class="tn" x="462.6" y="238" text-anchor="middle">实长</text><text class="tn" x="360" y="62" text-anchor="middle">以水平投影为一直角边、高度差为另一直角边，斜边即实长，斜边与水平边的夹角即 α</text></svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="480" viewBox="0 0 760 480" role="img">
+<defs>
+<style>
+.s0{fill:none;stroke:#141414;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.s1{fill:none;stroke:#141414;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+.s2{fill:none;stroke:#141414;stroke-width:1.15;stroke-dasharray:8 4.5;stroke-linecap:butt}
+.s3{fill:none;stroke:#141414;stroke-width:1.05;stroke-dasharray:16 3 3 3;stroke-linecap:butt}
+.g0{fill:none;stroke:#9a9a9a;stroke-width:.95;stroke-dasharray:5 4}
+.g1{fill:none;stroke:#9a9a9a;stroke-width:.95}
+.ht{fill:url(#hatch);stroke:#141414;stroke-width:1.15}
+.t{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:21px;fill:#141414}
+.tb{font-family:Georgia,'Times New Roman',serif;font-size:19px;fill:#141414}
+.tn{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:15.5px;fill:#141414}
+.ts{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:13.5px;fill:#141414}
+</style>
+<marker id="ar" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+  <path d="M0,1.4 L10,5 L0,8.6 z" fill="#141414"/>
+</marker>
+<pattern id="hatch" width="5.2" height="5.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="5.2" stroke="#141414" stroke-width="0.85"/>
+</pattern>
+</defs><path class="s0" d="M90,270 L290,270 L290,190 L90,190 Z"/><circle class="s0" cx="140" cy="230" r="12"/><line class="s3" x1="122" y1="230" x2="158" y2="230"/><line class="s3" x1="140" y1="212" x2="140" y2="248"/><circle class="s0" cx="240" cy="230" r="12"/><line class="s3" x1="222" y1="230" x2="258" y2="230"/><line class="s3" x1="240" y1="212" x2="240" y2="248"/><line class="s1" x1="90" y1="276" x2="90" y2="326"/><line class="s1" x1="290" y1="276" x2="290" y2="326"/><line class="s1" x1="90" y1="318" x2="290" y2="318" marker-start="url(#ar)" marker-end="url(#ar)"/><text class="tb" x="190" y="313" text-anchor="middle">100</text><line class="s1" x1="84" y1="190" x2="36" y2="190"/><line class="s1" x1="84" y1="270" x2="36" y2="270"/><line class="s1" x1="44" y1="190" x2="44" y2="270" marker-start="url(#ar)" marker-end="url(#ar)"/><text class="tb" x="49" y="230" text-anchor="start" >40</text><line class="s1" x1="140" y1="280" x2="140" y2="302"/><line class="s1" x1="240" y1="280" x2="240" y2="302"/><line class="s1" x1="140" y1="294" x2="240" y2="294" marker-start="url(#ar)" marker-end="url(#ar)"/><text class="tb" x="190" y="289" text-anchor="middle">50</text><circle cx="144" cy="226" r="2" fill="#141414"/><line class="s1" x1="144" y1="226" x2="150" y2="156"/><line class="s1" x1="150" y1="156" x2="158" y2="156"/><text class="tb" x="160" y="160" text-anchor="start">2×φ12</text><text class="tn" x="190" y="348" text-anchor="middle">（a）正确：四要素齐全</text><text class="tn" x="60" y="372" text-anchor="start">① 尺寸界线从轮廓、轴线引出，略超出尺寸线</text><text class="tn" x="60" y="398" text-anchor="start">② 尺寸线与所注线段平行，两端画箭头</text><text class="tn" x="60" y="424" text-anchor="start">③ 数字写在尺寸线上方中部，字头向上（竖直尺寸字头朝左）</text><path class="s0" d="M470,270 L670,270 L670,190 L470,190 Z"/><text class="tb" x="570" y="180" text-anchor="middle">100</text><text class="ts" x="570" y="160" text-anchor="middle">✗ 用轮廓线当尺寸线</text><line class="s1" x1="460" y1="316" x2="680" y2="316"/><text class="tb" x="570" y="320" text-anchor="middle">100</text><text class="ts" x="570" y="340" text-anchor="middle">✗ 尺寸线穿过数字</text><line class="s1" x1="440" y1="276" x2="414" y2="184"/><line class="s1" x1="440" y1="184" x2="414" y2="184"/><text class="tb" x="426" y="234" text-anchor="end">40</text><text class="ts" x="466" y="166" text-anchor="end">✗ 尺寸界线倾斜</text><text class="tn" x="570" y="386" text-anchor="middle">（b）错误：随手画线当尺寸</text><text class="tn" x="470" y="424" text-anchor="start">错法还有：尺寸线互相交叉、同一尺寸重复标注、尺寸数字与轮廓线相交</text></svg>

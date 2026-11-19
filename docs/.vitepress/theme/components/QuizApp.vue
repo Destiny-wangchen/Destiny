@@ -1,14 +1,18 @@
 ﻿<script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import bank from '../../../quiz/c-language.json'
+import { useData, withBase } from 'vitepress'
+import cBank from '../../../quiz/c-language.json'
+import gtBank from '../../../quiz/engineering-drawing.json'
 
 interface Question {
   id: string
-  type: 'choice' | 'blank'
+  type: 'choice' | 'multi' | 'blank'
   q: string
   code?: string
+  image?: string
+  src?: string
   options?: string[]
-  answer: number | string[]
+  answer: number | number[] | string[]
   explain: string
 }
 
@@ -18,7 +22,15 @@ interface Category {
   questions: Question[]
 }
 
-const { title, categories } = bank as { title: string; categories: Category[] }
+// 同一套组件，按页面 frontmatter 的 bank 字段切换题库
+const { frontmatter } = useData()
+const bankKey = (frontmatter.value.bank as string) || 'c'
+const bank = (bankKey === 'gt' ? gtBank : cBank) as {
+  title: string
+  note?: string
+  categories: Category[]
+}
+const { title, categories } = bank
 
 // 全部题目铺平，方便查找
 const qMap: Record<string, Question> = {}
@@ -26,8 +38,8 @@ for (const cat of categories) for (const q of cat.questions) qMap[q.id] = q
 const allIds = Object.keys(qMap)
 
 // —— 本地记录：题号 -> { p: 所选选项/填的文本, ok: 是否正确 } ——
-const STORE_KEY = 'quiz-c-record-v1'
-interface RecItem { p: number | string; ok: 0 | 1 }
+const STORE_KEY = bankKey === 'gt' ? 'quiz-gt-record-v1' : 'quiz-c-record-v1'
+interface RecItem { p: number | string | number[]; ok: 0 | 1 }
 
 function load(): Record<string, RecItem> {
   try {
@@ -49,15 +61,25 @@ function save() {
 function norm(s: string) {
   return s.replace(/，/g, ',').replace(/\s+/g, '')
 }
-function isCorrect(q: Question, picked: number | string) {
+function isCorrect(q: Question, picked: number | string | number[]) {
   if (q.type === 'choice') return picked === q.answer
+  if (q.type === 'multi') {
+    const right = (q.answer as number[]).slice().sort((a, b) => a - b).join(',')
+    const mine = (picked as number[]).slice().sort((a, b) => a - b).join(',')
+    return right === mine
+  }
   const list = q.answer as string[]
   return list.some((v) => norm(String(v)) === norm(String(picked)))
 }
 function answerText(q: Question) {
-  return q.type === 'choice'
-    ? String.fromCharCode(65 + (q.answer as number))
-    : (q.answer as string[])[0]
+  if (q.type === 'choice') return letter(q.answer as number)
+  if (q.type === 'multi') return (q.answer as number[]).map((i) => letter(i)).join('、')
+  return (q.answer as string[])[0]
+}
+function pickedText(q: Question, p: RecItem['p']) {
+  if (q.type === 'choice') return `${letter(p as number)}. ${q.options?.[p as number] ?? ''}`
+  if (q.type === 'multi') return (p as number[]).map((i) => letter(i)).join('、')
+  return String(p)
 }
 
 // —— 全局统计 ——
@@ -91,11 +113,12 @@ const view = ref<'menu' | 'quiz' | 'result'>('menu')
 const practiceMode = ref(true) // true 练习（逐题反馈），false 考试（交卷出分）
 const session = reactive({ label: '', ids: [] as string[], exam: false })
 const cur = ref(0)
-const examAnswers = reactive<Record<string, number | string>>({})
+const examAnswers = reactive<Record<string, number | string | number[]>>({})
 
 // 练习模式下的单题状态
 const practice = reactive({
   picked: null as number | null,
+  picks: [] as number[],
   text: '',
   confirmed: false
 })
@@ -137,6 +160,7 @@ function startWrong() {
 
 function resetPractice() {
   practice.picked = null
+  practice.picks = []
   practice.text = ''
   practice.confirmed = false
 }
@@ -145,12 +169,31 @@ const curQ = computed(() => qMap[session.ids[cur.value]])
 const curAnswered = computed(() => examAnswers[curQ.value.id] !== undefined)
 
 function pick(i: number) {
+  const q = curQ.value
+  const toggle = (arr: number[]) => (arr.includes(i) ? arr.filter((x) => x !== i) : [...arr, i].sort((a, b) => a - b))
   if (session.exam) {
-    examAnswers[curQ.value.id] = i
+    examAnswers[q.id] = q.type === 'multi' ? toggle((examAnswers[q.id] as number[]) ?? []) : i
   } else {
     if (practice.confirmed) return
-    practice.picked = i
+    if (q.type === 'multi') practice.picks = toggle(practice.picks)
+    else practice.picked = i
   }
+}
+
+/** 选项是否处于「已选」状态 */
+function isPicked(i: number) {
+  const q = curQ.value
+  if (session.exam) {
+    const v = examAnswers[q.id]
+    return q.type === 'multi' ? Array.isArray(v) && v.includes(i) : v === i
+  }
+  return q.type === 'multi' ? practice.picks.includes(i) : practice.picked === i
+}
+
+function optionRight(i: number) {
+  const q = curQ.value
+  if (q.type === 'multi') return (q.answer as number[]).includes(i)
+  return i === (q.answer as number)
 }
 
 function confirmBlank() {
@@ -171,6 +214,7 @@ function confirm() {
   if (session.exam) {
     if (q.type === 'blank' && !String(examAnswers[q.id] ?? '').trim()) return
     if (q.type === 'choice' && examAnswers[q.id] === undefined) return
+    if (q.type === 'multi' && !(examAnswers[q.id] as number[])?.length) return
     // 记录并前进；最后一题停住等交卷
     if (cur.value < session.ids.length - 1) {
       cur.value++
@@ -179,8 +223,10 @@ function confirm() {
     return
   }
   if (practice.confirmed) return
-  const picked: number | string = q.type === 'choice' ? (practice.picked as number) : practice.text.trim()
+  const picked: number | string | number[] =
+    q.type === 'choice' ? (practice.picked as number) : q.type === 'multi' ? [...practice.picks] : practice.text.trim()
   if (q.type === 'choice' && picked === null) return
+  if (q.type === 'multi' && !(picked as number[]).length) return
   if (q.type === 'blank' && !String(picked).trim()) return
   practice.confirmed = true
   record.value[q.id] = { p: picked, ok: isCorrect(q, picked) ? 1 : 0 }
@@ -195,7 +241,12 @@ function go(delta: number) {
 }
 
 function submitExam() {
-  const unanswered = session.ids.filter((id) => examAnswers[id] === undefined || (qMap[id].type === 'blank' && !String(examAnswers[id]).trim()))
+  const unanswered = session.ids.filter(
+    (id) =>
+      examAnswers[id] === undefined ||
+      (qMap[id].type === 'blank' && !String(examAnswers[id]).trim()) ||
+      (qMap[id].type === 'multi' && !(examAnswers[id] as number[])?.length)
+  )
   if (unanswered.length && !confirm(`还有 ${unanswered.length} 题未作答，确定交卷？`)) return
   for (const id of session.ids) {
     const q = qMap[id]
@@ -232,6 +283,16 @@ function letter(i: number) {
 function backToMenu() {
   view.value = 'menu'
 }
+
+// 支持 ?cat=分类id 直接进入某个分类、?q=题号 直接练某一道（方便从教程里链过来）
+if (typeof window !== 'undefined') {
+  const params = new URLSearchParams(window.location.search)
+  const auto = params.get('cat')
+  const target = auto && categories.find((c) => c.id === auto)
+  if (target) startCat(target)
+  const one = params.get('q')
+  if (one && qMap[one]) start(qMap[one].q.slice(0, 24), [one], false)
+}
 </script>
 
 <template>
@@ -245,6 +306,7 @@ function backToMenu() {
       <span v-if="accuracy !== null">正确率 {{ accuracy }}%</span>
       <span>错题 {{ wrongIds.length }} 道</span>
     </div>
+    <p v-if="bank.note" class="menu-hint">{{ bank.note }}</p>
     <p class="menu-hint">做题记录保存在你自己的浏览器里，下次打开还在。换设备或清缓存会丢失。</p>
 
     <div class="mode-row">
@@ -320,31 +382,32 @@ function backToMenu() {
     </div>
 
     <p class="quiz-q">{{ curQ.q }}</p>
+    <p v-if="curQ.src" class="quiz-src">{{ curQ.src }}</p>
+    <figure v-if="curQ.image" class="quiz-figure">
+      <img :src="withBase('/' + curQ.image)" :alt="curQ.q" loading="lazy" />
+    </figure>
+    <p v-if="curQ.type === 'multi'" class="quiz-tip">多选题，选出所有正确项后确认</p>
     <pre v-if="curQ.code" class="quiz-code"><code>{{ curQ.code }}</code></pre>
 
-    <div v-if="curQ.type === 'choice'" class="quiz-options">
+    <div v-if="curQ.type !== 'blank'" class="quiz-options">
       <button
         v-for="(opt, i) in curQ.options"
         :key="i"
         class="option"
         :class="{
-          picked: session.exam ? examAnswers[curQ.id] === i : practice.picked === i,
-          right: practice.confirmed && !session.exam && i === (curQ.answer as number),
-          wrong: practice.confirmed && !session.exam && practice.picked === i && i !== (curQ.answer as number)
+          picked: isPicked(i),
+          right: practice.confirmed && !session.exam && optionRight(i),
+          wrong: practice.confirmed && !session.exam && isPicked(i) && !optionRight(i)
         }"
         type="button"
         :disabled="practice.confirmed"
         @click="pick(i)"
       >
-        <span class="opt-letter">{{ letter(i) }}</span>
+        <span class="opt-letter">{{ curQ.type === 'multi' ? (isPicked(i) ? '☑' : '☐') : letter(i) }}</span>
         {{ opt }}
+        <span v-if="practice.confirmed && !session.exam && optionRight(i)" class="opt-mark">✓</span>
         <span
-          v-if="practice.confirmed && !session.exam && i === (curQ.answer as number)"
-          class="opt-mark"
-          >✓</span
-        >
-        <span
-          v-else-if="practice.confirmed && !session.exam && practice.picked === i && i !== (curQ.answer as number)"
+          v-else-if="practice.confirmed && !session.exam && isPicked(i) && !optionRight(i)"
           class="opt-mark"
           >✗</span
         >
@@ -369,7 +432,13 @@ function backToMenu() {
           v-if="!practice.confirmed"
           class="btn"
           type="button"
-          :disabled="curQ.type === 'choice' ? practice.picked === null : !practice.text.trim()"
+          :disabled="
+            curQ.type === 'choice'
+              ? practice.picked === null
+              : curQ.type === 'multi'
+                ? !practice.picks.length
+                : !practice.text.trim()
+          "
           @click="confirm"
         >
           确认作答
@@ -378,7 +447,7 @@ function backToMenu() {
           <p class="verdict">
             {{ record[curQ.id]?.ok ? '答对了' : '答错了' }} · 正确答案：{{ answerText(curQ) }}
           </p>
-          <p class="explain">{{ curQ.explain }}</p>
+          <p v-if="curQ.explain" class="explain">{{ curQ.explain }}</p>
         </div>
       </template>
       <!-- 考试模式 -->
@@ -444,12 +513,12 @@ function backToMenu() {
       </p>
       <pre v-if="qMap[id].code" class="quiz-code"><code>{{ qMap[id].code }}</code></pre>
       <p class="review-a">
-        你的答案：{{ record[id] ? (qMap[id].type === 'choice' ? letter(record[id].p as number) + '. ' + qMap[id].options?.[record[id].p as number] : record[id].p) : '未作答' }}
+        你的答案：{{ record[id] ? pickedText(qMap[id], record[id].p) : '未作答' }}
         <template v-if="!record[id]?.ok">
           <br />正确答案：{{ answerText(qMap[id]) }}
         </template>
       </p>
-      <p class="explain">{{ qMap[id].explain }}</p>
+      <p v-if="qMap[id].explain" class="explain">{{ qMap[id].explain }}</p>
     </div>
     <div class="menu-actions">
       <button class="btn" type="button" @click="backToMenu">返回目录</button>
@@ -621,6 +690,29 @@ function backToMenu() {
   font-size: 1.0625rem;
   line-height: 1.7;
   margin: 1.5rem 0 1rem;
+}
+.quiz-src {
+  margin: -0.5rem 0 0.75rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.quiz-tip {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.quiz-figure {
+  margin: 0 0 1rem;
+}
+.quiz-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 8px;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
 }
 .quiz-code {
   margin: 0 0 1rem;

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="330" viewBox="0 0 760 330" role="img">
+<defs>
+<style>
+.s0{fill:none;stroke:#141414;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.s1{fill:none;stroke:#141414;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+.s2{fill:none;stroke:#141414;stroke-width:1.15;stroke-dasharray:8 4.5;stroke-linecap:butt}
+.s3{fill:none;stroke:#141414;stroke-width:1.05;stroke-dasharray:16 3 3 3;stroke-linecap:butt}
+.g0{fill:none;stroke:#9a9a9a;stroke-width:.95;stroke-dasharray:5 4}
+.g1{fill:none;stroke:#9a9a9a;stroke-width:.95}
+.ht{fill:url(#hatch);stroke:#141414;stroke-width:1.15}
+.t{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:21px;fill:#141414}
+.tb{font-family:Georgia,'Times New Roman',serif;font-size:19px;fill:#141414}
+.tn{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:15.5px;fill:#141414}
+.ts{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:13.5px;fill:#141414}
+</style>
+<marker id="ar" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+  <path d="M0,1.4 L10,5 L0,8.6 z" fill="#141414"/>
+</marker>
+<pattern id="hatch" width="5.2" height="5.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="5.2" stroke="#141414" stroke-width="0.85"/>
+</pattern>
+</defs><path class="s0" d="M50,240 L230,240 L230,120 L50,120 Z"/><line class="s3" x1="140" y1="254" x2="140" y2="106"/><line class="s2" x1="90" y1="240" x2="90" y2="120"/><line class="s2" x1="190" y1="240" x2="190" y2="120"/><text class="tn" x="140" y="274" text-anchor="middle">视图（画虚线）</text><path class="s0" d="M280,240 L460,240 L460,120 L280,120 Z"/><line class="s3" x1="370" y1="254" x2="370" y2="106"/><path class="ht" d="M280,240 L320,240 L320,120 L280,120 Z"/><path class="ht" d="M420,240 L460,240 L460,120 L420,120 Z"/><line class="s0" x1="320" y1="240" x2="320" y2="120"/><line class="s0" x1="420" y1="240" x2="420" y2="120"/><text class="tn" x="370" y="274" text-anchor="middle">全剖视图</text><path class="s0" d="M510,240 L690,240 L690,120 L510,120 Z"/><line class="s3" x1="600" y1="254" x2="600" y2="106"/><path class="ht" d="M510,240 L550,240 L550,120 L510,120 Z"/><line class="s0" x1="550" y1="240" x2="550" y2="120"/><line class="s3" x1="600" y1="240" x2="600" y2="120"/><text class="tn" x="600" y="274" text-anchor="middle">半剖视图（左半剖）</text><text class="tn" x="50" y="56" text-anchor="start">剖切平面通过轴线：假想剖开后，剖到的实体部分画剖面线，孔的位置留空</text><text class="tn" x="50" y="78" text-anchor="start">半剖以对称中心线为界：一半画剖视、一半画外形，外形一侧不再画虚线</text></svg>

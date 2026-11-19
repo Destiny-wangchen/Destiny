@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="440" viewBox="0 0 720 440" role="img">
+<defs>
+<style>
+.s0{fill:none;stroke:#141414;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.s1{fill:none;stroke:#141414;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+.s2{fill:none;stroke:#141414;stroke-width:1.15;stroke-dasharray:8 4.5;stroke-linecap:butt}
+.s3{fill:none;stroke:#141414;stroke-width:1.05;stroke-dasharray:16 3 3 3;stroke-linecap:butt}
+.g0{fill:none;stroke:#9a9a9a;stroke-width:.95;stroke-dasharray:5 4}
+.g1{fill:none;stroke:#9a9a9a;stroke-width:.95}
+.ht{fill:url(#hatch);stroke:#141414;stroke-width:1.15}
+.t{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:21px;fill:#141414}
+.tb{font-family:Georgia,'Times New Roman',serif;font-size:19px;fill:#141414}
+.tn{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:15.5px;fill:#141414}
+.ts{font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:13.5px;fill:#141414}
+</style>
+<marker id="ar" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+  <path d="M0,1.4 L10,5 L0,8.6 z" fill="#141414"/>
+</marker>
+<pattern id="hatch" width="5.2" height="5.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+  <line x1="0" y1="0" x2="0" y2="5.2" stroke="#141414" stroke-width="0.85"/>
+</pattern>
+</defs><line class="s3" x1="96" y1="220" x2="640" y2="220"/><line class="s3" x1="150" y1="124" x2="150" y2="420"/><text class="t" x="88" y="224" text-anchor="end">X</text><text class="t" x="646" y="224" text-anchor="start">Z</text><text class="t" x="144" y="432" text-anchor="end">Y</text><line class="g0" x1="610" y1="380" x2="490" y2="260"/><line class="g0" x1="150" y1="196" x2="150" y2="380"/><line class="g0" x1="150" y1="196" x2="610" y2="196"/><line class="g0" x1="150" y1="380" x2="610" y2="380"/><line class="g0" x1="610" y1="380" x2="610" y2="196"/><line class="g0" x1="294" y1="220" x2="294" y2="332"/><line class="g0" x1="294" y1="220" x2="562" y2="220"/><line class="g0" x1="294" y1="332" x2="562" y2="332"/><line class="g0" x1="562" y1="332" x2="562" y2="220"/><line class="g0" x1="198" y1="124" x2="198" y2="272"/><line class="g0" x1="198" y1="124" x2="502" y2="124"/><line class="g0" x1="198" y1="272" x2="502" y2="272"/><line class="g0" x1="502" y1="272" x2="502" y2="124"/><path class="s0" d="M150,196 L294,220 L198,124 Z"/><path class="s0" d="M610,196 L562,220 L502,124 Z"/><path class="s0" d="M150,380 L294,332 L198,272 Z"/><circle class="s1" cx="150" cy="196" r="1.9"/><line class="s1" x1="150" y1="196" x2="145.8" y2="193.6"/><text class="t" x="144.4" y="192.8" text-anchor="middle">a′</text><circle class="s1" cx="150" cy="380" r="1.9"/><line class="s1" x1="150" y1="380" x2="144" y2="390.5"/><text class="t" x="142" y="394" text-anchor="middle">a</text><circle class="s1" cx="610" cy="196" r="1.9"/><line class="s1" x1="610" y1="196" x2="619" y2="199"/><text class="t" x="622" y="200" text-anchor="middle">a″</text><circle class="s1" cx="294" cy="220" r="1.9"/><line class="s1" x1="294" y1="220" x2="299.25" y2="217.15"/><text class="t" x="301" y="216.2" text-anchor="middle">b′</text><circle class="s1" cx="294" cy="332" r="1.9"/><line class="s1" x1="294" y1="332" x2="301.5" y2="342.5"/><text class="t" x="304" y="346" text-anchor="middle">b</text><circle class="s1" cx="562" cy="220" r="1.9"/><line class="s1" x1="562" y1="220" x2="571" y2="223"/><text class="t" x="574" y="224" text-anchor="middle">b″</text><circle class="s1" cx="198" cy="124" r="1.9"/><line class="s1" x1="198" y1="124" x2="190.65" y2="116.65"/><text class="t" x="188.2" y="114.2" text-anchor="middle">c′</text><circle class="s1" cx="198" cy="272" r="1.9"/><line class="s1" x1="198" y1="272" x2="187.5" y2="282.5"/><text class="t" x="184" y="286" text-anchor="middle">c</text><circle class="s1" cx="502" cy="124" r="1.9"/><line class="s1" x1="502" y1="124" x2="511" y2="127"/><text class="t" x="514" y="128" text-anchor="middle">c″</text><text class="tn" x="200" y="254" text-anchor="start">主视图（已知）</text><text class="tn" x="200" y="414" text-anchor="start">俯视图（求得）</text><text class="tn" x="580" y="254" text-anchor="start">左视图（已知）</text><text class="ts" x="514" y="284" text-anchor="start">45°</text></svg>
